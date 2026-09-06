@@ -1,0 +1,125 @@
+name: internship-api-platform
+
+services:
+  gateway:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  auth-service:
+    build: ./services/auth-service
+    image: internship/auth-service:0.1.0
+    env_file: .env
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  user-service:
+    build: ./services/user-service
+    image: internship/user-service:0.1.0
+    env_file: .env
+    expose:
+      - "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - platform-net
+
+  graphql-service:
+    build: ./services/graphql-service
+    image: internship/graphql-service:0.1.0
+    env_file: .env
+    expose:
+      - "4000"
+    depends_on:
+      - user-service
+      - grpc-service
+    networks:
+      - platform-net
+
+  grpc-service:
+    build: ./services/grpc-service
+    image: internship/grpc-service:0.1.0
+    env_file: .env
+    expose:
+      - "50051"
+    depends_on:
+      - user-service
+    networks:
+      - platform-net
+
+  websocket-service:
+    build: ./services/websocket-service
+    image: internship/websocket-service:0.1.0
+    env_file: .env
+    expose:
+      - "3000"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - platform-net
+
+  webhook-service:
+    build: ./services/webhook-service
+    image: internship/webhook-service:0.1.0
+    env_file: .env
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+
+  soap-service:
+    build: ./services/soap-service
+    image: internship/soap-service:0.1.0
+    env_file: .env
+    expose:
+      - "8000"
+    networks:
+      - platform-net
+
+  webrtc-signaling:
+    build: ./services/webrtc-signaling
+    image: internship/webrtc-signaling:0.1.0
+    env_file: .env
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+
+  postgres:
+    image: postgres:16.4-alpine
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  platform-net:
+    driver: bridge
+
+volumes:
+  pgdata:
