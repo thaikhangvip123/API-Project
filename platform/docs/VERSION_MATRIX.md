@@ -1,6 +1,6 @@
 # Version Matrix
 
-Last updated: 2026-09-09
+Last updated: 2026-09-12
 
 | Component | Version pin | Where declared | Notes |
 |---|---:|---|---|
@@ -13,6 +13,7 @@ Last updated: 2026-09-09
 | Socket.IO | TBD in step 6 | `websocket-service/package.json` | Pin exact version when implemented |
 | auth-service runtime dependencies | none | `auth-service/package.json` | JWT HS256 uses Node.js built-in `crypto` |
 | Prisma CLI and client | `5.22.0` | `user-service/package.json` | Pinned for PostgreSQL migration and ORM access |
-| `@grpc/grpc-js` | TBD in step 4 | `grpc-service/package.json` | Pin exact version when implemented |
-| protobuf tooling | `25.x` target, exact TBD | `grpc-service` tooling | Pin exact version when implemented |
+| `@grpc/grpc-js` | `1.12.2` | `grpc-service/package.json`, `package-lock.json` | Pinned gRPC server and client runtime |
+| `@grpc/proto-loader` | `0.7.13` | `grpc-service/package.json`, `package-lock.json` | Pinned protobuf runtime loader |
+| protobuf tooling | `.proto` runtime loading | `grpc-service/proto` | Code generation is intentionally deferred; contract is loaded at startup |
 | Spyne | TBD in step 8 | `soap-service/requirements.txt` | Pin exact version when implemented |

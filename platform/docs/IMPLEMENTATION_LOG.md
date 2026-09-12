@@ -48,3 +48,11 @@
 - Yêu cầu quyền npm và Docker: bị từ chối do lỗi xác thực cục bộ của approval service; package install, Docker build, migration, và smoke test PostgreSQL được ghi nhận là pending trong checklist hậu kiểm.
 - `apply_patch`: thêm route chính xác `/api/users` vào Nginx để endpoint liệt kê user trong hướng dẫn vận hành hoạt động không cần dấu gạch chéo cuối.
 - User-run verification: `npm install` hoàn tất với 0 vulnerabilities; Docker Compose tạo gateway thành công; hai API qua gateway trả HTTP `200`.
+
+## 2026-09-12
+
+- Kiểm tra runtime: sandbox không có quyền truy cập Docker pipe; gateway không lắng nghe tại `127.0.0.1:80` tại thời điểm kiểm tra nên không thể xác nhận container đang chạy.
+- `apply_patch`: bắt đầu roadmap bước 4 cho `grpc-service`: protobuf user lookup, REST bridge tới user-service, gRPC health RPC, Dockerfile, README, và test tự động.
+- `npm test`: pass 5/5 cho user REST bridge và gRPC handlers sau khi sửa đăng ký method lower-camel-case của proto-loader.
+- `npm install --package-lock-only`: bị chặn vì sandbox không có quyền truy cập npm registry/cache; lock file, Docker build và smoke test gRPC đang pending.
+- User-run verification: Docker Compose reports `postgres`, `user-service`, and `grpc-service` healthy; `grpcurl` calls to `ListUsers` and `GetUser` succeeded from `platform-net`.

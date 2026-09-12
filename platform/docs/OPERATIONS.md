@@ -23,10 +23,11 @@ docker compose down -v
 
 ## Local Startup
 
-The current state has completed steps 1-3. Run services incrementally while following the roadmap:
+The current state has completed steps 1-4. Run services incrementally while following the roadmap:
 
 - Step 2: `docker compose up -d --build auth-service gateway`
 - Step 3: `docker compose up -d --build postgres user-service gateway`
+- Step 4: `docker compose up -d --build postgres user-service grpc-service`
 - Step 10: `docker compose up -d --build`
 
 The gateway is intentionally not hard-dependent on every service so it can start while later roadmap services are still scaffold-only.

@@ -48,3 +48,4 @@ All external traffic enters through the Nginx gateway. Internal services communi
 - Step 2 Docker runtime verification complete: standalone image/container and Compose gateway flow pass.
 - Step 3 implemented: `user-service` REST CRUD uses PostgreSQL through Prisma, with an initial migration, tests, Dockerfile, README, and Compose healthcheck.
 - Step 3 runtime verification complete: the pinned Prisma packages installed with no reported vulnerabilities, and the Compose gateway plus user-service API checks passed.
+- Step 4 complete: `grpc-service` exposes internal user lookups and health RPCs; PostgreSQL, user-service, and grpc-service Compose containers are healthy, and `grpcurl` user lookup/list checks pass on `platform-net`.

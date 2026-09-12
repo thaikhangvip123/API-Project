@@ -2,6 +2,26 @@
 
 Use this file after each system update. The project has completed source implementation through roadmap step 3; each entry records its own verification status.
 
+## 2026-09-12 - Roadmap Step 4 gRPC Service
+
+Change: Completed `grpc-service` implementation with a versioned protobuf user-lookup contract, internal REST bridge to user-service, gRPC health RPC, Dockerfile, README, and automated tests.
+
+Directly affected services: grpc-service and its user-service dependency.
+
+Services requiring retest due to dependencies: user-service, postgres, and future graphql-service.
+
+Focused validation: `npm test` passed 5/5; syntax checks passed for all gRPC source files; `git diff --check` passed.
+
+Review result: primary-agent review was used under user authorization because 9Router cannot start subagents. It found and fixed the proto-loader lower-camel-case method registration bug and ensured gRPC errors are actual `Error` objects with status codes.
+
+Build and runtime result: user-confirmed OK. Docker Compose built and started `postgres`, `user-service`, and `grpc-service`; all three containers reported `healthy`. `grpcurl` on the private `internship-api-platform_platform-net` returned the expected user from `UserLookupService/ListUsers` and `UserLookupService/GetUser`.
+
+CI result: not run; CI starts in roadmap step 13.
+
+Cloud deploy result: not run; cloud deploy starts in roadmap step 15.
+
+Executor: Codex
+
 ## 2026-09-09 - Roadmap Step 3 User Service
 
 Change: Implemented `user-service` REST CRUD with a PostgreSQL Prisma schema, initial SQL migration, JSON logging, Dockerfile, README, unit/API tests, and Compose healthchecks.
