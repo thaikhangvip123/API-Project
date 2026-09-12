@@ -41,6 +41,11 @@ services:
     networks:
       - platform-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   graphql-service:
     image: ghcr.io/your-org/graphql-service:0.1.0

@@ -23,7 +23,7 @@ docker compose down -v
 
 ## Local Startup
 
-The current state is a step-1 scaffold. Run services incrementally while following the roadmap:
+The current state has completed steps 1-3. Run services incrementally while following the roadmap:
 
 - Step 2: `docker compose up -d --build auth-service gateway`
 - Step 3: `docker compose up -d --build postgres user-service gateway`

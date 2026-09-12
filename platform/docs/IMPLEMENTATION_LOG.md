@@ -38,3 +38,13 @@
 - `docker compose up -d --build --force-recreate auth-service gateway`: recreate OK.
 - `docker compose ps auth-service gateway`: cả hai container `healthy`.
 - Smoke test qua gateway `http://127.0.0.1/api/auth/*`: `/health`, `/register`, `/login`, `/verify` đều OK.
+
+## 2026-09-09
+
+- `apply_patch`: triển khai roadmap bước 3 cho `user-service`: CRUD endpoints, Prisma/PostgreSQL schema, migration ban đầu, Dockerfile, test tự động, README, và Compose healthcheck.
+- `node --check`: pass cho tất cả source file của `user-service`.
+- `npm test`: pass 4/4 test cho CRUD logic và HTTP API với repository test trong bộ nhớ.
+- `npm install --package-lock-only --ignore-scripts`: không tạo được lock file vì sandbox không có quyền mạng.
+- Yêu cầu quyền npm và Docker: bị từ chối do lỗi xác thực cục bộ của approval service; package install, Docker build, migration, và smoke test PostgreSQL được ghi nhận là pending trong checklist hậu kiểm.
+- `apply_patch`: thêm route chính xác `/api/users` vào Nginx để endpoint liệt kê user trong hướng dẫn vận hành hoạt động không cần dấu gạch chéo cuối.
+- User-run verification: `npm install` hoàn tất với 0 vulnerabilities; Docker Compose tạo gateway thành công; hai API qua gateway trả HTTP `200`.

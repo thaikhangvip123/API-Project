@@ -1,6 +1,6 @@
 # Version Matrix
 
-Last updated: 2026-09-05
+Last updated: 2026-09-09
 
 | Component | Version pin | Where declared | Notes |
 |---|---:|---|---|
@@ -12,7 +12,7 @@ Last updated: 2026-09-05
 | Apollo Server | TBD in step 5 | `graphql-service/package.json` | Pin exact version when implemented |
 | Socket.IO | TBD in step 6 | `websocket-service/package.json` | Pin exact version when implemented |
 | auth-service runtime dependencies | none | `auth-service/package.json` | JWT HS256 uses Node.js built-in `crypto` |
-| Prisma | TBD in step 3 | `user-service/package.json` | Pin exact version when implemented |
+| Prisma CLI and client | `5.22.0` | `user-service/package.json` | Pinned for PostgreSQL migration and ORM access |
 | `@grpc/grpc-js` | TBD in step 4 | `grpc-service/package.json` | Pin exact version when implemented |
 | protobuf tooling | `25.x` target, exact TBD | `grpc-service` tooling | Pin exact version when implemented |
 | Spyne | TBD in step 8 | `soap-service/requirements.txt` | Pin exact version when implemented |

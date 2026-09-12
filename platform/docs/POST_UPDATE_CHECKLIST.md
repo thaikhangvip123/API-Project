@@ -1,6 +1,30 @@
 # Post-Update Checklist
 
-Use this file after each system update. The project is currently at roadmap step 1, so runtime checks are documented as not yet applicable until service code exists.
+Use this file after each system update. The project has completed source implementation through roadmap step 3; each entry records its own verification status.
+
+## 2026-09-09 - Roadmap Step 3 User Service
+
+Change: Implemented `user-service` REST CRUD with a PostgreSQL Prisma schema, initial SQL migration, JSON logging, Dockerfile, README, unit/API tests, and Compose healthchecks.
+
+Directly affected services: user-service, postgres dependency metadata, gateway route `/api/users/*`, Compose healthcheck metadata.
+
+Services requiring retest due to dependencies: postgres and gateway; future gRPC and GraphQL services will depend on user-service.
+
+Build result: user-confirmed OK. `npm install` completed with 0 vulnerabilities, produced the committed `package-lock.json`, and Docker Compose created the gateway successfully.
+
+Health-check result: user-confirmed OK for the two gateway-routed user-service API checks; both returned HTTP `200`.
+
+API checklist result: local automated CRUD and HTTP API tests passed 4/4 using an in-memory repository. User-confirmed gateway runtime checks returned HTTP `200` for two user-service APIs. Full create/update/delete PostgreSQL smoke tests remain pending.
+
+Syntax result: passed for all user-service source files.
+
+Version matrix: updated with Prisma CLI/client `5.22.0`.
+
+CI result: not run; CI starts in roadmap step 13.
+
+Cloud deploy result: not run; cloud deploy starts in roadmap step 15.
+
+Executor: Codex
 
 ## 2026-09-02 - Step 1 Scaffold
 

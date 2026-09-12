@@ -46,4 +46,5 @@ All external traffic enters through the Nginx gateway. Internal services communi
 - Step 1 complete: folder structure, gateway routing design, compose skeleton, version matrix, and operation/checklist docs.
 - Step 2 implemented: `auth-service` REST + JWT code, tests, Dockerfile, README, and Compose healthcheck are in place.
 - Step 2 Docker runtime verification complete: standalone image/container and Compose gateway flow pass.
-- Step 3 next: implement `user-service` REST CRUD.
+- Step 3 implemented: `user-service` REST CRUD uses PostgreSQL through Prisma, with an initial migration, tests, Dockerfile, README, and Compose healthcheck.
+- Step 3 runtime verification complete: the pinned Prisma packages installed with no reported vulnerabilities, and the Compose gateway plus user-service API checks passed.
