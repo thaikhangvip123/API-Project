@@ -20,7 +20,7 @@ Copy `.env.example` or use the platform-level `.env`.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `3000` | HTTP listen port |
-| `JWT_SECRET` | required | HMAC secret used to sign JWTs |
+| `JWT_SECRET` | required | HMAC secret used to sign JWTs; production requires at least 32 bytes and rejects placeholder values |
 | `JWT_EXPIRES_IN` | `1h` | Token lifetime, supports `s`, `m`, `h`, `d` |
 | `LOG_LEVEL` | `info` | Reserved for consistent platform logging |
 

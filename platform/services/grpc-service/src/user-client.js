@@ -6,7 +6,7 @@ export class UpstreamError extends Error {
   }
 }
 
-export function createUserClient({ baseUrl = process.env.USER_SERVICE_URL, fetchImpl = fetch, timeoutMs = Number(process.env.USER_SERVICE_TIMEOUT_MS || 5000) } = {}) {
+export function createUserClient({ baseUrl = process.env.USER_SERVICE_URL, fetchImpl = fetch, timeoutMs = Number(process.env.USER_SERVICE_TIMEOUT_MS || process.env.UPSTREAM_TIMEOUT_MS || 5000) } = {}) {
   if (!baseUrl) {
     throw new Error('USER_SERVICE_URL must be configured');
   }

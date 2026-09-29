@@ -26,7 +26,7 @@ All external traffic enters through the Nginx gateway. Internal services communi
 | `auth-service` | Login, JWT creation, JWT validation endpoint | Yes |
 | `user-service` | User CRUD and profile data | Yes |
 | `graphql-service` | Unified query layer calling REST/gRPC internally | Yes |
-| `grpc-service` | Internal order-style API demo | No |
+| `grpc-service` | Internal user lookup API over gRPC | No |
 | `websocket-service` | Chat or real-time event broadcast demo | Yes |
 | `webhook-service` | Signed webhook validation and idempotency demo | Yes |
 | `soap-service` | WSDL and one SOAP method demo | Yes |
@@ -41,6 +41,21 @@ All external traffic enters through the Nginx gateway. Internal services communi
 - Service configuration is read from `.env`, based on `.env.example`.
 - Gateway DNS lookup is deferred until request time, so it can run while only the current roadmap service has been implemented.
 
+## Implemented Runtime Flow
+
+```text
+Client
+  -> Nginx gateway
+     -> /api/auth/*  -> auth-service (in-memory auth demo)
+     -> /api/users/* -> user-service -> PostgreSQL
+     -> /graphql     -> graphql-service
+                         -> user-service over REST for users
+                         -> grpc-service over gRPC for user(id)
+                              -> user-service over REST
+```
+
+Only the gateway publishes a host port. PostgreSQL and gRPC stay private on `platform-net`. The WebSocket, webhook, SOAP, and WebRTC services remain scaffold-only until roadmap steps 6-9.
+
 ## Current Roadmap Status
 
 - Step 1 complete: folder structure, gateway routing design, compose skeleton, version matrix, and operation/checklist docs.
@@ -49,3 +64,4 @@ All external traffic enters through the Nginx gateway. Internal services communi
 - Step 3 implemented: `user-service` REST CRUD uses PostgreSQL through Prisma, with an initial migration, tests, Dockerfile, README, and Compose healthcheck.
 - Step 3 runtime verification complete: the pinned Prisma packages installed with no reported vulnerabilities, and the Compose gateway plus user-service API checks passed.
 - Step 4 complete: `grpc-service` exposes internal user lookups and health RPCs; PostgreSQL, user-service, and grpc-service Compose containers are healthy, and `grpcurl` user lookup/list checks pass on `platform-net`.
+- Step 5 complete: `graphql-service` exposes a unified schema; `users` uses user-service REST and `user(id)` uses grpc-service. The two queries were verified through the Nginx gateway with persisted user data.

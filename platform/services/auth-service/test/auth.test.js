@@ -67,5 +67,15 @@ describe('auth service', () => {
     assert.equal(parseExpiresIn('15m'), 900);
     assert.equal(parseExpiresIn('2h'), 7200);
     assert.equal(parseExpiresIn('1d'), 86400);
+    assert.throws(() => parseExpiresIn('0s'), /positive duration/);
+    assert.throws(() => parseExpiresIn('999999999999999999d'), /positive duration/);
+  });
+
+  it('rejects placeholder or short JWT secrets in production', () => {
+    assert.throws(
+      () => createAuthService({ jwtSecret: 'change_me_dev_secret', nodeEnv: 'production' }),
+      /at least 32 bytes/
+    );
+    assert.doesNotThrow(() => createAuthService({ jwtSecret: 'a-secure-production-secret-with-32-bytes', nodeEnv: 'production' }));
   });
 });

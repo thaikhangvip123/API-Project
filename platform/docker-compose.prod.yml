@@ -53,11 +53,18 @@ services:
     expose:
       - "4000"
     depends_on:
-      - user-service
-      - grpc-service
+      user-service:
+        condition: service_healthy
+      grpc-service:
+        condition: service_healthy
     networks:
       - platform-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:4000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   grpc-service:
     image: ghcr.io/your-org/grpc-service:0.1.0

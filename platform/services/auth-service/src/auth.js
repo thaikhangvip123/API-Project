@@ -15,9 +15,13 @@ export function createAuthService(options = {}) {
   const usersByEmail = new Map();
   const jwtSecret = options.jwtSecret || process.env.JWT_SECRET;
   const expiresIn = options.expiresIn || process.env.JWT_EXPIRES_IN || '1h';
+  const nodeEnv = options.nodeEnv || process.env.NODE_ENV || 'development';
 
   if (!jwtSecret || jwtSecret === 'change_me') {
     throw new Error('JWT_SECRET must be configured');
+  }
+  if (nodeEnv === 'production' && (jwtSecret.startsWith('change_me') || Buffer.byteLength(jwtSecret) < 32)) {
+    throw new Error('JWT_SECRET must be at least 32 bytes and must not use a placeholder in production');
   }
 
   function register({ email, password, name }) {
@@ -180,7 +184,12 @@ export function parseExpiresIn(value) {
     d: 24 * DEFAULT_EXPIRES_IN_SECONDS
   };
 
-  return amount * multipliers[unit];
+  const ttl = amount * multipliers[unit];
+  if (amount <= 0 || !Number.isSafeInteger(ttl)) {
+    throw new Error('JWT_EXPIRES_IN must be a positive duration');
+  }
+
+  return ttl;
 }
 
 function hashPassword(password) {

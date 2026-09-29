@@ -23,11 +23,12 @@ docker compose down -v
 
 ## Local Startup
 
-The current state has completed steps 1-4. Run services incrementally while following the roadmap:
+The current state has completed steps 1-5. Run services incrementally while following the roadmap:
 
 - Step 2: `docker compose up -d --build auth-service gateway`
 - Step 3: `docker compose up -d --build postgres user-service gateway`
 - Step 4: `docker compose up -d --build postgres user-service grpc-service`
+- Step 5: `docker compose up -d --build postgres user-service grpc-service graphql-service gateway`
 - Step 10: `docker compose up -d --build`
 
 The gateway is intentionally not hard-dependent on every service so it can start while later roadmap services are still scaffold-only.
@@ -92,12 +93,15 @@ Expected result: `grpcurl` can list or call the demo service. If the gRPC port r
 docker compose up -d --build postgres user-service grpc-service graphql-service gateway
 curl -X POST http://localhost/graphql \
   -H "Content-Type: application/json" \
-  -d "{\"query\":\"{ __typename }\"}"
+  -d "{\"query\":\"{ users { id email name } }\"}"
+curl -X POST http://localhost/graphql \
+  -H "Content-Type: application/json" \
+  -d "{\"query\":\"{ user(id: 1) { id email name } }\"}"
 docker compose ps graphql-service gateway
 docker compose logs --tail=100 graphql-service gateway
 ```
 
-Expected result: GraphQL returns valid JSON and resolvers can reach their internal REST/gRPC dependencies.
+Expected result: both queries return valid JSON; `users` is served through user-service REST and `user(id)` through grpc-service.
 
 ### websocket-service
 

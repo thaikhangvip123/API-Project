@@ -1,6 +1,62 @@
 # Post-Update Checklist
 
-Use this file after each system update. The project has completed source implementation through roadmap step 3; each entry records its own verification status.
+Use this file after each system update. The project has completed source implementation through roadmap step 5; each entry records its own verification status.
+
+## 2026-09-29 - Architecture Readiness Review Through Roadmap Step 5
+
+Change: Reviewed the implemented architecture, all source/configuration changes, service contracts, environment variables, dependency locks, tests, Compose definitions, gateway routing, and operations documentation before roadmap step 6. Fixed GraphQL malformed-JSON handling, upstream error disclosure, gRPC deadline mapping, timeout validation/fallback, duplicated protobuf drift, production JWT secret validation, JWT duration edge cases, and documentation inconsistencies. Added GraphQL HTTP adapter regression coverage and an implemented runtime-flow summary.
+
+Directly affected services: auth-service, graphql-service, grpc-service, gateway/configuration documentation, and the shared environment example.
+
+Architecture result: the implemented path is coherent: gateway routes public REST/GraphQL traffic; user-service persists through PostgreSQL; graphql-service uses user-service REST for lists and grpc-service for single-user lookup; grpc-service bridges to user-service over the private network. WebSocket, webhook, SOAP, and WebRTC remain scaffold-only for roadmap steps 6-9.
+
+Automated tests: PASS, 25/25 total (`auth-service` 7/7, `user-service` 4/4, `grpc-service` 5/5, `graphql-service` 9/9).
+
+Static/configuration validation: PASS. All JavaScript source files passed `node --check`; local and production Compose files passed `docker compose config --quiet`; `git diff --check` passed; GraphQL and gRPC protobuf contracts are identical.
+
+Dependency validation: PASS. Clean lockfile installs completed for user-service, grpc-service, and graphql-service using a sandbox-local cache. `npm audit --omit=dev` reported 0 vulnerabilities for all three dependency-bearing services. Auth-service has no third-party runtime dependencies.
+
+Security/error-handling result: production auth now rejects placeholder or shorter-than-32-byte JWT secrets; invalid or overflowing JWT durations are rejected; malformed GraphQL JSON returns HTTP 400; unknown upstream 500 details and gRPC connection details are not exposed to clients; gRPC deadline/unavailable errors map to GraphQL service-unavailable behavior.
+
+Docker runtime result: BLOCKED in this run. Sandbox access to the Docker named pipe required escalation, but automatic approval failed because 9router returned `404 No active credentials for provider: openai`. The previously recorded step-5 gateway runtime checks remain the latest successful end-to-end evidence. The pending gateway CRUD-by-ID correction still requires container rebuild and GET/PUT/DELETE smoke tests.
+
+Independent review result: BLOCKED in this run. The configured subagent alias `cx/gpt-5.6-luna-review` was not recognized by the multi-agent runtime; a fallback reviewer also failed because 9router returned the same missing-provider-credentials error. A full primary-agent review was completed, but the independent-review hard gate must be rerun after the router credential/model mapping is repaired.
+
+CI result: not run; CI starts in roadmap step 13.
+
+Cloud deploy result: not run; cloud deploy starts in roadmap step 15.
+
+Readiness decision: source, tests, dependency audit, contracts, and static configuration are ready for roadmap step 6. Do not treat the system as fully runtime-cleared until the blocked Docker CRUD smoke test and independent subagent review are rerun successfully.
+
+Executor: Codex
+
+## 2026-09-29 - Gateway User CRUD Route Correction (pending runtime verification)
+
+Change: Split the user-service gateway routes so `/api/users/health` remains `/health` upstream while `/api/users/:id` reaches `/users/:id`. This restores GET, PUT, and DELETE user CRUD calls through the public gateway.
+
+Directly affected services: gateway and user-service API access.
+
+Focused validation: static configuration review and local/prod `docker compose config --quiet` passed. Runtime confirmation must exercise `GET /api/users/1`, `PUT /api/users/1`, and `DELETE /api/users/1` after the gateway is rebuilt.
+
+Executor: Codex
+
+## 2026-09-13 - Roadmap Step 5 GraphQL Service
+
+Change: Implemented `graphql-service` with supported Apollo Server 5, GraphQL 16.14.2, and a bounded native HTTP adapter. The `users` query calls user-service REST; the `user(id)` query calls grpc-service. Added Dockerfile, Compose dependency/healthcheck metadata, documentation, and automated tests.
+
+Directly affected services: graphql-service, gateway route `/graphql`, and Compose metadata.
+
+Services requiring retest due to dependencies: gateway, user-service, grpc-service, and postgres.
+
+Focused validation: syntax checks passed for GraphQL source files; unit tests passed 5/5 before dependency cleanup; a local HTTP smoke test returned the expected `/health` response and GraphQL `Query` type. Local/prod Compose configs parse successfully; `git diff --check` passed. Primary-agent review fixed GraphQL bad-input error mapping, replaced the EOL Apollo Server 4/Express 4 adapter with the supported Apollo Server 5 plus native adapter, and prevents unexpected server errors from leaking internal messages.
+
+Dependency/runtime result: host installation completed; the GraphQL dependency tree was revised to Apollo Server 5.5.1 and GraphQL 16.14.2 after removing the EOL Apollo 4/Express 4 stack. `npm audit --omit=dev` reports 0 vulnerabilities. Through the Nginx gateway, `users` returned the persisted GraphQL demo user via user-service REST and `user(id: 1)` returned the same user via grpc-service.
+
+CI result: not run; CI starts in roadmap step 13.
+
+Cloud deploy result: not run; cloud deploy starts in roadmap step 15.
+
+Executor: Codex
 
 ## 2026-09-12 - Roadmap Step 4 gRPC Service
 

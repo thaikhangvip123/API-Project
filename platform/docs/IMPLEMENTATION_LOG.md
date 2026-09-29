@@ -51,8 +51,27 @@
 
 ## 2026-09-12
 
+- `apply_patch`: bắt đầu roadmap bước 5 cho `graphql-service`: Apollo Server/Express endpoint, REST client tới user-service, gRPC client tới grpc-service, Dockerfile, proto contract copy, README, Compose readiness/healthcheck, và unit tests.
+- `node --check`: pass cho `graphql-service/src/clients.js`, `resolvers.js`, và `server.js`.
+- `docker compose -f platform/docker-compose.yml config --quiet` và prod variant: parse OK; sandbox chỉ cảnh báo không đọc được Docker user config.
+- `npm install`: sandbox không tạo được dependency hoặc `package-lock.json`; yêu cầu elevated bị approval service từ chối do `9Router` trả `404 No active credentials for provider: openai`. `npm test`, Docker build, và runtime smoke test bước 5 đang chờ chạy trên host của người dùng.
+- `apply_patch`: primary-agent review phát hiện hai lỗi mức medium: GraphQL input lỗi bị trả là internal error và gRPC dependency dùng version range mở. Đã map input lỗi sang `BAD_USER_INPUT` và pin `@grpc/grpc-js` ở `1.14.4`, đồng bộ lockfile/version matrix.
 - Kiểm tra runtime: sandbox không có quyền truy cập Docker pipe; gateway không lắng nghe tại `127.0.0.1:80` tại thời điểm kiểm tra nên không thể xác nhận container đang chạy.
 - `apply_patch`: bắt đầu roadmap bước 4 cho `grpc-service`: protobuf user lookup, REST bridge tới user-service, gRPC health RPC, Dockerfile, README, và test tự động.
 - `npm test`: pass 5/5 cho user REST bridge và gRPC handlers sau khi sửa đăng ký method lower-camel-case của proto-loader.
 - `npm install --package-lock-only`: bị chặn vì sandbox không có quyền truy cập npm registry/cache; lock file, Docker build và smoke test gRPC đang pending.
 - User-run verification: Docker Compose reports `postgres`, `user-service`, and `grpc-service` healthy; `grpcurl` calls to `ListUsers` and `GetUser` succeeded from `platform-net`.
+
+## 2026-09-29
+
+- `primary-agent review`: rà soát blueprint, rule bắt buộc, toàn bộ source/config/dependency tree đã triển khai từ bước 1 đến bước 5.
+- `apply_patch`: sửa Nginx gateway: `/api/users/health` được chuyển riêng thành `/health`; mọi CRUD theo ID `/api/users/:id` được chuyển đúng thành `/users/:id`.
+- `apply_patch`: đồng bộ mốc tiến độ trong checklist hậu kiểm sang roadmap bước 5.
+- `apply_patch`: đồng bộ Architecture, Operations, và checklist với runtime GraphQL đã xác nhận qua gateway.
+- `npm test`: chạy lại toàn bộ service đã triển khai; auth-service 7/7, user-service 4/4, grpc-service 5/5, graphql-service 9/9 đều pass.
+- `npm audit --omit=dev`: user-service, grpc-service, và graphql-service đều báo 0 vulnerabilities.
+- `docker compose config --quiet`: local và production Compose đều parse thành công; `node --check`, `git diff --check`, và kiểm tra hai bản proto giống hệt đều pass.
+- `apply_patch`: tách GraphQL HTTP adapter để test độc lập; sửa malformed JSON thành HTTP 400; ẩn lỗi upstream nội bộ; map gRPC deadline/unavailable thành 503; validate timeout; đồng bộ proto; thêm fallback timeout cho grpc-service.
+- `apply_patch`: tăng production JWT guard, từ chối secret placeholder/ngắn hơn 32 byte và duration bằng 0 hoặc overflow; bổ sung test hồi quy.
+- `multi-agent review`: không chạy được. Alias `cx/gpt-5.6-luna-review` không được runtime nhận diện; reviewer fallback tiếp tục lỗi `404 No active credentials for provider: openai` từ 9router.
+- `docker info` và cleanup cache tạm ngoài sandbox: không chạy được vì approval service gặp cùng lỗi credential; thêm `.codex-tmp/` vào `.gitignore` để cache không làm bẩn Git status.

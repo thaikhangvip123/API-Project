@@ -22,7 +22,8 @@ The service listens on `50051` and is intentionally not published to the host.
 |---|---:|---|
 | `GRPC_SERVICE_PORT` | `50051` | gRPC listen port |
 | `USER_SERVICE_URL` | required | Internal base URL of `user-service` |
-| `USER_SERVICE_TIMEOUT_MS` | `5000` | Timeout for REST calls to `user-service` |
+| `USER_SERVICE_TIMEOUT_MS` | `UPSTREAM_TIMEOUT_MS` or `5000` | Service-specific timeout override for REST calls to `user-service` |
+| `UPSTREAM_TIMEOUT_MS` | `5000` | Shared platform upstream timeout fallback |
 
 ## Local commands
 
