@@ -322,7 +322,7 @@ Production Compose mặc định chỉ bind gateway vào `127.0.0.1:8080`. Khôn
 | 8 | Code `soap-service` | WSDL truy cập được, method demo chạy đúng |
 | 9 | Code `webrtc-signaling` | Video call 1-1 giữa 2 tab trình duyệt |
 | 10 | Ghép toàn bộ bằng `docker-compose.yml` + Nginx gateway | Test local toàn hệ thống |
-| 11 | **Chạy Post-Update Verification Workflow (Mục 8)** | Toàn bộ workflow xanh |
+| 11 | **Chạy cổng local/repository của Post-Update Verification Workflow (Mục 8)** | Test, build, runtime, cấu hình production và repository scan xanh; CI ghi `N/A` đến bước 13 |
 | 12 | Viết Terraform, tạo EC2 | EC2 sẵn sàng, SSH được |
 | 13 | Viết CI (`ci.yml`) | Build/test tự động chạy xanh trên GitHub |
 | 14 | Viết CD (`cd.yml`) | Deploy tự động lên EC2 khi merge `main` |
@@ -350,7 +350,7 @@ Production Compose mặc định chỉ bind gateway vào `127.0.0.1:8080`. Khôn
 - [ ] **Test lại từng loại API theo checklist Mục 4** — không chỉ test API vừa thay đổi, vì các service phụ thuộc lẫn nhau (VD: sửa auth-service phải test lại cả graphql-service vì nó gọi qua auth).
 - [ ] **Kiểm tra log** của tất cả container xem có warning/error mới phát sinh không: `docker compose logs --tail=100`
 - [ ] **Kiểm tra version matrix** (`docs/VERSION_MATRIX.md`) đã cập nhật đúng version mới chưa
-- [ ] **Chạy CI trên GitHub** (push lên nhánh test) và xác nhận toàn bộ job trong `ci.yml` pass
+- [ ] **Chạy CI trên GitHub** và xác nhận toàn bộ job trong `ci.yml` pass từ bước 13 trở đi; trước khi CI được triển khai, ghi rõ `N/A - roadmap step 13`, không được ghi `PASS`
 - [ ] Nếu thay đổi liên quan đến gRPC proto: chạy kiểm tra breaking change (VD: `buf breaking` nếu có dùng Buf) trước khi generate lại code ở các service liên quan
 - [ ] Nếu thay đổi liên quan đến DB schema: kiểm tra migration chạy được cả chiều up/down, backup dữ liệu test trước khi áp dụng
 

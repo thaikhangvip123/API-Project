@@ -16,8 +16,8 @@ Last updated: 2026-10-05
 | ws | `8.22.0` | `webrtc-signaling/package.json`, `package-lock.json` | WebRTC offer/answer/ICE signaling transport |
 | auth-service runtime dependencies | none | `auth-service/package.json` | JWT HS256 uses Node.js built-in `crypto` |
 | Prisma CLI and client | `5.22.0` | `user-service/package.json` | Pinned for PostgreSQL migration and ORM access |
-| `@grpc/grpc-js` | `1.14.4` | `grpc-service/package.json`, `package-lock.json` | Pinned gRPC server and client runtime |
-| `@grpc/proto-loader` | `0.7.13` | `grpc-service/package.json`, `package-lock.json` | Pinned protobuf runtime loader |
+| `@grpc/grpc-js` | `1.14.5` | `grpc-service` and `graphql-service` package manifests/lockfiles | Exact security-patched gRPC client/server runtime pin |
+| `@grpc/proto-loader` | `0.7.13` | `grpc-service` and `graphql-service` package manifests/lockfiles | Exact protobuf runtime loader pin |
 | protobuf tooling | `.proto` runtime loading | `grpc-service/proto` | Code generation is intentionally deferred; contract is loaded at startup |
 | Spyne | `2.14.0` | `soap-service/requirements.txt` | SOAP service and WSDL generation |
 | lxml | `6.1.3` | `soap-service/requirements.txt` | Spyne XML parsing and schema validation |

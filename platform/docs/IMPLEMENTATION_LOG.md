@@ -107,3 +107,13 @@
 - Chuẩn bị nhánh public orphan không kế thừa file hoặc commit metadata từ lịch sử phát triển nội bộ.
 - Đổi production gateway sang loopback-only mặc định; mọi public deployment phải terminate TLS phía trước và chỉ redirect HTTP sang HTTPS.
 - Chuẩn hóa rollback qua cùng deployment script có host-wide lock và manifest digest/commit SHA đã xác minh; loại bỏ thao tác Compose trực tiếp với mutable image reference.
+
+## 2026-10-05 - Bước 11: Cổng kiểm định trước hạ tầng
+
+- Chạy lại toàn bộ test của tám service, đạt 68/68; kiểm tra SOAP dùng trực tiếp image Python 3.11.6 đã pin để đồng nhất với runtime triển khai.
+- Phát hiện advisory mức cao trong `@grpc/grpc-js` 1.14.4 và nâng đồng bộ `grpc-service` cùng `graphql-service` lên bản exact 1.14.5; audit lại toàn bộ bảy service Node.js không còn vulnerability đã biết.
+- Validate Compose, build lại tám application image, khởi động và restart toàn bộ stack; 10/10 container healthy và restart count không có bất thường.
+- Chạy cross-protocol smoke test sau startup và sau restart, đều đạt 9/9 cho REST/JWT, PostgreSQL CRUD, GraphQL REST + gRPC, Socket.IO, webhook, SOAP và WebRTC signaling.
+- Xác minh production Compose fail-fast khi thiếu secret/origin bắt buộc, render thành công với cấu hình hợp lệ và mặc định chỉ bind gateway tại `127.0.0.1:8080`.
+- Quét toàn bộ lịch sử public bằng Gitleaks 8.24.3, không phát hiện secret; phần xác minh GitHub CI được giữ lại cho bước 13 theo đúng thứ tự roadmap.
+- Làm rõ acceptance criterion của bước 11 là cổng local/repository trước hạ tầng; kiểm tra GitHub CI bắt đầu bắt buộc từ bước 13 và phải ghi `N/A`, không ghi `PASS`, khi workflow chưa tồn tại.
