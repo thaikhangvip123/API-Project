@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Private two-person WebRTC video room demo">
+    <title>Signal Room</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Peer-to-peer studio</p>
+          <h1>Signal Room</h1>
+        </div>
+        <div class="status-pill" id="status" data-state="idle">Ready to join</div>
+      </header>
+
+      <section class="stage" aria-label="Video call">
+        <article class="video-card remote-card">
+          <div class="card-label"><span>Remote</span><span id="remoteState">Waiting</span></div>
+          <video id="remoteVideo" autoplay playsinline></video>
+          <div class="video-placeholder" id="remotePlaceholder">The other participant will appear here.</div>
+        </article>
+        <article class="video-card local-card">
+          <div class="card-label"><span>You</span><span>Local preview</span></div>
+          <video id="localVideo" autoplay muted playsinline></video>
+          <div class="video-placeholder" id="localPlaceholder">Camera preview</div>
+        </article>
+      </section>
+
+      <section class="control-deck">
+        <form id="joinForm" class="room-form">
+          <label for="roomInput">Room code</label>
+          <div class="input-row">
+            <input id="roomInput" name="room" minlength="4" maxlength="64" pattern="[A-Za-z0-9_-]+" autocomplete="off" required>
+            <button type="submit" id="joinButton" class="primary">Join room</button>
+          </div>
+          <p>Open the same room link in a second tab or device.</p>
+        </form>
+
+        <div class="call-controls" aria-label="Call controls">
+          <button type="button" id="copyButton">Copy invite</button>
+          <button type="button" id="micButton" disabled>Mute mic</button>
+          <button type="button" id="cameraButton" disabled>Hide camera</button>
+          <button type="button" id="leaveButton" class="danger" disabled>Leave</button>
+        </div>
+      </section>
+
+      <footer>
+        <span id="iceInfo">Loading network configuration...</span>
+        <span>Media stays peer-to-peer</span>
+      </footer>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "webhook-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Signed webhook receiver with bounded in-memory idempotency.",
+  "type": "module",
+  "scripts": { "start": "node src/server.js", "test": "node test/run-tests.js" },
+  "engines": { "node": ">=20.11.0" },
+  "dependencies": { "express": "5.2.1" }
+}

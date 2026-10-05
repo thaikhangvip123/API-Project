@@ -1,0 +1,224 @@
+name: internship-api-platform-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  gateway:
+    image: nginx:1.27-alpine
+    ports:
+      - "${GATEWAY_BIND_ADDRESS:-127.0.0.1}:${GATEWAY_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - platform-net
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  auth-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/auth-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  user-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/user-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+    expose:
+      - "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  graphql-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/graphql-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      USER_SERVICE_URL: ${USER_SERVICE_URL:-http://user-service:3000}
+      GRPC_SERVICE_HOST: ${GRPC_SERVICE_HOST:-grpc-service}
+      GRPC_SERVICE_PORT: ${GRPC_SERVICE_PORT:-50051}
+      UPSTREAM_TIMEOUT_MS: ${UPSTREAM_TIMEOUT_MS:-5000}
+    expose:
+      - "4000"
+    depends_on:
+      user-service:
+        condition: service_healthy
+      grpc-service:
+        condition: service_healthy
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:4000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  grpc-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/grpc-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      USER_SERVICE_URL: ${USER_SERVICE_URL:-http://user-service:3000}
+      USER_SERVICE_TIMEOUT_MS: ${USER_SERVICE_TIMEOUT_MS:-5000}
+      GRPC_SERVICE_PORT: ${GRPC_SERVICE_PORT:-50051}
+    expose:
+      - "50051"
+    depends_on:
+      - user-service
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+
+  websocket-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/websocket-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SOCKET_IO_CORS_ORIGIN: ${SOCKET_IO_CORS_ORIGIN:?SOCKET_IO_CORS_ORIGIN must be set}
+      CHAT_HISTORY_LIMIT: ${CHAT_HISTORY_LIMIT:-50}
+      CHAT_MESSAGE_MAX_LENGTH: ${CHAT_MESSAGE_MAX_LENGTH:-1000}
+    expose:
+      - "3000"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  webhook-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/webhook-service:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET must be set}
+      WEBHOOK_BODY_LIMIT_BYTES: ${WEBHOOK_BODY_LIMIT_BYTES:-1048576}
+      WEBHOOK_IDEMPOTENCY_TTL_SECONDS: ${WEBHOOK_IDEMPOTENCY_TTL_SECONDS:-86400}
+      WEBHOOK_IDEMPOTENCY_MAX_ENTRIES: ${WEBHOOK_IDEMPOTENCY_MAX_ENTRIES:-10000}
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  soap-service:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/soap-service:${IMAGE_TAG:-0.1.0}
+    expose:
+      - "8000"
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  webrtc-signaling:
+    image: ${IMAGE_REGISTRY:-ghcr.io/your-org}/webrtc-signaling:${IMAGE_TAG:-0.1.0}
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      STUN_URL: ${STUN_URL:-stun:stun.l.google.com:19302}
+      SIGNALING_ALLOWED_ORIGINS: ${SIGNALING_ALLOWED_ORIGINS:?SIGNALING_ALLOWED_ORIGINS must be set}
+      SIGNALING_MAX_CONNECTIONS: ${SIGNALING_MAX_CONNECTIONS:-1000}
+      SIGNALING_MAX_PAYLOAD_BYTES: ${SIGNALING_MAX_PAYLOAD_BYTES:-65536}
+      SIGNALING_MAX_BUFFERED_BYTES: ${SIGNALING_MAX_BUFFERED_BYTES:-262144}
+      SIGNALING_RATE_LIMIT_MESSAGES: ${SIGNALING_RATE_LIMIT_MESSAGES:-120}
+      SIGNALING_RATE_LIMIT_WINDOW_MS: ${SIGNALING_RATE_LIMIT_WINDOW_MS:-10000}
+      SIGNALING_HEARTBEAT_MS: ${SIGNALING_HEARTBEAT_MS:-30000}
+    expose:
+      - "3000"
+    networks:
+      - platform-net
+    restart: unless-stopped
+    init: true
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - platform-net
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  platform-net:
+    driver: bridge
+
+volumes:
+  pgdata:

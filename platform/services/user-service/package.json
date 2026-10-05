@@ -1,0 +1,20 @@
+{
+  "name": "user-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "REST CRUD user service for the internship API platform.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/run-tests.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "prisma": "5.22.0"
+  }
+}

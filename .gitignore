@@ -1,0 +1,55 @@
+.env
+.env.*
+*.env
+*.env.*
+node_modules/
+dist/
+build/
+coverage/
+.pytest_cache/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db
+.codex-tmp/
+
+# Local agent orchestration and private verification evidence.
+AgentsRules.md
+platform/docs/POST_UPDATE_CHECKLIST.md
+.codex/
+.agents/
+
+# Local cloud credentials and infrastructure state.
+.aws/
+.ssh/
+.kube/
+.azure/
+.config/gcloud/
+.docker/
+.npmrc
+.pypirc
+.netrc
+.pgpass
+.envrc
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+
+# Private keys, certificates with bundled keys, and local overrides.
+*.pem
+*.key
+*.p12
+*.pfx
+docker-compose.override.yml
+
+# Reference configuration files stay local; public documentation lists names only.
+*.example
+*.sample
+*.template
+
+# Runtime configuration is generated locally and must never be committed.
+**/.env
+**/.env.*

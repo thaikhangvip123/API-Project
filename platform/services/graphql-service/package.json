@@ -1,0 +1,20 @@
+{
+  "name": "graphql-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GraphQL gateway for the internship API platform.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/run-tests.js"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@apollo/server": "5.5.1",
+    "@grpc/grpc-js": "1.14.4",
+    "@grpc/proto-loader": "0.7.13",
+    "graphql": "16.14.2"
+  }
+}
