@@ -1,6 +1,6 @@
 # Operations
 
-Tài liệu này hướng dẫn chạy và kiểm tra hệ thống trên native Ubuntu/Linux sau roadmap bước 10. Hạ tầng, Terraform, CI/CD và EC2 sẽ được bổ sung ở các bước sau.
+Tài liệu này hướng dẫn chạy và kiểm tra hệ thống trên native Ubuntu/Linux. Từ roadmap bước 12, mọi thao tác Terraform, SSH, CI/CD và production phải chạy từ Ubuntu/Linux; Windows không còn là môi trường vận hành được hỗ trợ.
 
 ## 1. Quy ước tài liệu
 

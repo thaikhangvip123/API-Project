@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+deploy_user='${deploy_user}'
+project_name='${project_name}'
+
+fail() {
+  printf 'ERROR: %s\n' "$1" >&2
+  exit 1
+}
+
+install -d -m 0755 /etc/apt/keyrings
+apt-get update
+apt-get install -y --no-install-recommends ca-certificates curl git gnupg jq openssl unzip
+
+curl --fail --silent --show-error --location https://download.docker.com/linux/ubuntu/gpg \
+  | gpg --dearmor --yes --output /etc/apt/keyrings/docker.gpg
+chmod 0644 /etc/apt/keyrings/docker.gpg
+
+architecture="$(dpkg --print-architecture)"
+codename="$(. /etc/os-release && printf '%s' "$${VERSION_CODENAME}")"
+printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu %s stable\n' \
+  "$${architecture}" "$${codename}" > /etc/apt/sources.list.d/docker.list
+
+apt-get update
+apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl enable --now docker
+
+getent passwd "$${deploy_user}" >/dev/null 2>&1 && fail "The dedicated deploy user already exists in the base image."
+useradd --create-home --user-group --shell /bin/bash "$${deploy_user}"
+usermod --append --groups docker "$${deploy_user}"
+
+install -d -m 0700 -o "$${deploy_user}" -g "$${deploy_user}" "/home/$${deploy_user}/.ssh"
+printf '%s' '${ssh_public_key_b64}' | base64 --decode > "/home/$${deploy_user}/.ssh/authorized_keys"
+printf '\n' >> "/home/$${deploy_user}/.ssh/authorized_keys"
+chown "$${deploy_user}:$${deploy_user}" "/home/$${deploy_user}/.ssh/authorized_keys"
+chmod 0600 "/home/$${deploy_user}/.ssh/authorized_keys"
+
+install -d -m 0755 "/opt/$${project_name}"
+install -d -m 0750 -o "$${deploy_user}" -g "$${deploy_user}" "/opt/$${project_name}/releases"
+install -d -m 0750 -o "$${deploy_user}" -g "$${deploy_user}" "/opt/$${project_name}/shared"
+
+cat > /etc/ssh/sshd_config.d/60-internship-platform.conf <<EOF
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AllowUsers $${deploy_user}
+EOF
+
+sshd -t
+systemctl restart ssh
+
+docker version
+docker compose version
+touch /var/lib/cloud/instance/bootstrap-complete

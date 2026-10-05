@@ -12,4 +12,4 @@ Use GitHub private vulnerability reporting or a private security advisory for th
 
 ## Supported Scope
 
-Security verification currently covers the local Ubuntu/Linux deployment workflow. Cloud-specific controls will be documented when the infrastructure and deployment roadmap steps are implemented.
+Security verification covers the local Ubuntu/Linux workflow and the Terraform controls introduced for the step 12 EC2 host. Live cloud verification, TLS termination, immutable image deployment, backup, and rollback controls will be completed and evidenced in their later roadmap steps.

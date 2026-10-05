@@ -66,3 +66,11 @@ rm -f -- "${empty_env}"
 ## Scope
 
 These results complete the local and repository-security portions of roadmap step 11. The GitHub CI check in the full post-update workflow becomes applicable after CI is implemented in step 13. Terraform, CD, EC2 deployment, TLS termination, cloud backup, and production rollback verification belong to later roadmap steps and are not claimed complete here.
+
+## Step 12 Infrastructure Definition
+
+- Terraform defines an Ubuntu 22.04 EC2 instance at the required `t3.small` minimum, an encrypted gp3 root volume, IMDSv2-only metadata access, an imported EC2 public key, and a stable Elastic IP.
+- The security group exposes no service or database ports. SSH requires a single operator `/32`; HTTPS is available for the later TLS endpoint; HTTP remains disabled unless explicitly enabled for redirect-only use.
+- Cloud-init installs Docker Engine and Docker Compose v2, creates the non-root key-only `deploy` account, disables root/password SSH, and prepares host directories for immutable releases and shared configuration.
+- `infrastructure/scripts/verify-ec2.sh` provides the native-Linux SSH/bootstrap gate. Actual AWS apply and live SSH evidence must be recorded only after provider authentication and instance creation succeed.
+- AWS CloudShell validation passed with 7/7 Terraform tests. The reviewed live plan contains five additions and no changes or destroys, but apply was intentionally deferred; therefore step 12 is not yet complete and no cloud runtime readiness is claimed.

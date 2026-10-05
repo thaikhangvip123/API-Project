@@ -107,6 +107,9 @@
 - Chuẩn bị nhánh public orphan không kế thừa file hoặc commit metadata từ lịch sử phát triển nội bộ.
 - Đổi production gateway sang loopback-only mặc định; mọi public deployment phải terminate TLS phía trước và chỉ redirect HTTP sang HTTPS.
 - Chuẩn hóa rollback qua cùng deployment script có host-wide lock và manifest digest/commit SHA đã xác minh; loại bỏ thao tác Compose trực tiếp với mutable image reference.
+- Hoàn thiện mã Terraform bước 12 cho EC2 Ubuntu 22.04: dùng default VPC/subnet, Elastic IP, volume gp3 mã hóa, IMDSv2, Security Group chỉ mở SSH cho một `/32` và HTTPS; HTTP mặc định đóng.
+- Bootstrap Docker Engine/Compose v2 từ repository chính thức, tạo user `deploy` chỉ đăng nhập bằng SSH key, chặn root/password SSH và chuẩn bị thư mục release/shared cho các bước CD sau.
+- Đã validate/test Terraform trên Windows và AWS CloudShell Linux (`7/7`), tạo live plan tại Singapore với `5 add, 0 change, 0 destroy`, sau đó chủ động dừng trước `apply` để kiểm soát credit. Chưa có EC2/EIP nào được tạo; checkpoint tiếp tục nằm trong `infrastructure/README.md`.
 
 ## 2026-10-05 - Bước 11: Cổng kiểm định trước hạ tầng
 
