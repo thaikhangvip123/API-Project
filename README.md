@@ -7,6 +7,8 @@ Repository nay duoc tach thanh hai huong lam viec de khong lam mat checkpoint hi
 
 Trang thai hien tai: buoc 11 da hoan thanh; `linux-os` chon may Ubuntu 24.04 tai nha lam production target. Home-server runtime khong can AWS. Ma Terraform EC2 van duoc giu de hoc va tham khao, nhung khong `apply` trong luong self-host.
 
+Codex hoac nguoi tiep tuc du an tren Ubuntu phai doc `AGENTS.md` va `UBUNTU_HANDOFF.md` truoc khi thay doi repository.
+
 ## Chuyen sang Ubuntu 24.04
 
 Tren Ubuntu moi, chi can cai Git truoc khi clone:
