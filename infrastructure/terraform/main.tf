@@ -1,10 +1,10 @@
-data "aws_ami" "ubuntu_2204" {
+data "aws_ami" "ubuntu_2404" {
   most_recent = true
   owners      = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
   }
 
   filter {
@@ -34,7 +34,7 @@ resource "aws_key_pair" "deploy" {
 }
 
 resource "aws_instance" "platform" {
-  ami                         = data.aws_ami.ubuntu_2204.id
+  ami                         = data.aws_ami.ubuntu_2404.id
   instance_type               = var.instance_type
   subnet_id                   = sort(data.aws_subnets.default.ids)[0]
   associate_public_ip_address = true
@@ -75,7 +75,7 @@ resource "aws_instance" "platform" {
   tags = {
     Name        = var.project_name
     Environment = var.environment
-    OS          = "Ubuntu-22.04"
+    OS          = "Ubuntu-24.04"
   }
 
   lifecycle {

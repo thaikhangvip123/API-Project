@@ -2,6 +2,15 @@
 
 > Chỉ ghi thay đổi kỹ thuật, cấu hình, phiên bản và kết quả xác minh của hệ thống. Không ghi danh tính bên thực hiện, công cụ nội bộ hoặc quá trình điều phối.
 
+## 2026-10-07 - Chuẩn bị handoff sang Ubuntu 24.04
+
+- Tách nhánh `linux-os` từ checkpoint hiện tại để tiếp tục trên Ubuntu 24.04 mà không thay đổi nhánh `main` dùng cho Windows.
+- Nâng target Terraform EC2 từ Ubuntu 22.04 lên Ubuntu 24.04 LTS và bổ sung assertion cho tag hệ điều hành.
+- Thêm bootstrap và readiness verification cho máy Ubuntu mới, gồm Docker Engine/Compose v2, Node.js 20, Terraform 1.x và AWS CLI v2.
+- Chuẩn hóa Git line ending thành LF và executable bit cho shell script để clone trên Linux có thể chạy trực tiếp.
+- Chuyển checkpoint bước 12 sang kế hoạch mới: tạo `.env`, PostgreSQL volume, SSH key và Terraform plan mới trên Ubuntu; không chuyển secret/runtime state từ Windows.
+- Xác minh Terraform format/validate và test đạt 7/7, Compose local/production parse thành công, 59/59 test Node.js pass, Bash syntax pass và ShellCheck không có warning; runtime native Ubuntu và 9 test SOAP trên Python 3.11.6 được dành cho bước hậu kiểm sau khi clone.
+
 ## 2026-09-02 - Bước 1: Khởi tạo nền tảng
 
 - Tạo cấu trúc `platform/` gồm Compose local/production, Nginx gateway, tám thư mục service, tài liệu vận hành/kiến trúc/version/checklist và placeholder cho hạ tầng/CI.

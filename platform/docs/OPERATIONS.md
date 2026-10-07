@@ -12,7 +12,7 @@ Tài liệu này hướng dẫn chạy và kiểm tra hệ thống trên native 
 
 ## 2. Yêu cầu Ubuntu
 
-- Native Ubuntu 22.04/24.04 hoặc máy ảo Ubuntu. Không chạy project từ filesystem Windows/NTFS được mount vào Linux.
+- Native Ubuntu 24.04 LTS hoặc máy ảo Ubuntu 24.04. Không chạy project từ filesystem Windows/NTFS được mount vào Linux.
 - Docker Engine và Docker Compose v2 đang hoạt động.
 - User hiện tại có quyền chạy Docker mà không cần chuyển sang root shell.
 - Bash, `od`, `stat`, `mktemp`, `flock` (gói `util-linux`), `/run/lock` có quyền ghi và port `80` chưa bị ứng dụng khác chiếm.

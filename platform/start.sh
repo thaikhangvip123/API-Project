@@ -18,7 +18,7 @@ cleanup() {
 trap cleanup EXIT
 
 require_native_linux() {
-  [[ "$(uname -s)" == "Linux" ]] || fail "This startup script supports native Linux only. Use Ubuntu for the deployment-compatible workflow."
+  [[ "$(uname -s)" == "Linux" ]] || fail "This startup script supports native Linux only. Use Ubuntu 24.04 for the deployment-compatible workflow."
 }
 
 require_linux_filesystem() {

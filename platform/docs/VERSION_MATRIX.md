@@ -1,9 +1,10 @@
 # Version Matrix
 
-Last updated: 2026-10-05
+Last updated: 2026-10-07
 
 | Component | Version pin | Where declared | Notes |
 |---|---:|---|---|
+| Ubuntu host | `24.04 LTS` | Terraform AMI filter, Ubuntu bootstrap scripts | Native development and EC2 target on `linux-os` |
 | Node.js base image | `node:20.11-alpine` | Implemented Node service Dockerfiles | Required by blueprint |
 | Python base image | `python:3.11.6-slim` | `soap-service/Dockerfile` | Matches the verified local Python 3.11.6 runtime |
 | Nginx | `nginx:1.27-alpine` | `docker-compose.yml`, `docker-compose.prod.yml` | Gateway image |

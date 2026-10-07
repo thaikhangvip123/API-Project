@@ -298,7 +298,7 @@ Security Group tối thiểu:
 
 ### 6.2 Các bước triển khai
 
-1. `terraform apply` → tạo EC2 (Ubuntu 22.04, tối thiểu `t3.small`)
+1. `terraform apply` → tạo EC2 (Ubuntu 24.04 LTS, tối thiểu `t3.small`)
 2. Cài Docker + Docker Compose plugin qua `user_data` script (tự động khi EC2 khởi động lần đầu)
 3. Pull image đã build sẵn từ GitHub Container Registry (GHCR) — không build trực tiếp trên EC2
 4. Chạy deployment script có host-wide lock để pull image và apply `docker-compose.prod.yml`

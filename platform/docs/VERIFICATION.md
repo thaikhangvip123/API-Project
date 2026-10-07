@@ -69,8 +69,16 @@ These results complete the local and repository-security portions of roadmap ste
 
 ## Step 12 Infrastructure Definition
 
-- Terraform defines an Ubuntu 22.04 EC2 instance at the required `t3.small` minimum, an encrypted gp3 root volume, IMDSv2-only metadata access, an imported EC2 public key, and a stable Elastic IP.
+- Terraform defines an Ubuntu 24.04 EC2 instance at the required `t3.small` minimum, an encrypted gp3 root volume, IMDSv2-only metadata access, an imported EC2 public key, and a stable Elastic IP.
 - The security group exposes no service or database ports. SSH requires a single operator `/32`; HTTPS is available for the later TLS endpoint; HTTP remains disabled unless explicitly enabled for redirect-only use.
 - Cloud-init installs Docker Engine and Docker Compose v2, creates the non-root key-only `deploy` account, disables root/password SSH, and prepares host directories for immutable releases and shared configuration.
 - `infrastructure/scripts/verify-ec2.sh` provides the native-Linux SSH/bootstrap gate. Actual AWS apply and live SSH evidence must be recorded only after provider authentication and instance creation succeed.
-- AWS CloudShell validation passed with 7/7 Terraform tests. The reviewed live plan contains five additions and no changes or destroys, but apply was intentionally deferred; therefore step 12 is not yet complete and no cloud runtime readiness is claimed.
+- The earlier Ubuntu 22.04 live plan is intentionally obsolete after the `linux-os` handoff. Ubuntu 24.04 requires a fresh `terraform init`, test run, and reviewed plan with the new SSH key and current operator `/32`; apply remains deferred, so step 12 is not yet complete and no cloud runtime readiness is claimed.
+
+## Ubuntu 24.04 Handoff Verification
+
+- Terraform 1.9.8 formatting and validation passed after changing the AMI selector to Ubuntu 24.04; all 7 mock-provider tests passed.
+- Local and production Compose files parsed successfully with sanitized temporary configuration.
+- All 59 Node.js service tests passed. The 9 SOAP tests were not rerun because the available Windows Python runtime is 3.12 while the service is pinned to Python 3.11.6; the previous pinned-runtime result remains 9/9.
+- Bash syntax checks passed for the startup, bootstrap, readiness, and EC2 verification scripts; ShellCheck 0.10.0 reported no warning-or-higher findings.
+- Native Ubuntu 24.04 package installation, Docker runtime, fresh `.env` generation, full-stack health, smoke testing, and a live AWS plan remain post-clone verification items.
