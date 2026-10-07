@@ -69,7 +69,7 @@ curl --fail --silent --show-error --location \
   --output "${tmp_dir}/nodesource.asc"
 gpg --dearmor --yes --output "${tmp_dir}/nodesource.gpg" "${tmp_dir}/nodesource.asc"
 sudo install -m 0644 "${tmp_dir}/nodesource.gpg" /etc/apt/keyrings/nodesource.gpg
-printf 'deb [arch=%s signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main\n' "${architecture}" \
+printf 'deb [arch=%s signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\n' "${architecture}" \
   | sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
 
 sudo apt-get update

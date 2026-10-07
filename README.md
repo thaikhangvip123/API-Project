@@ -5,7 +5,7 @@ Repository nay duoc tach thanh hai huong lam viec de khong lam mat checkpoint hi
 - `main`: giu nguyen checkpoint tren Windows tai commit `428a1a7`.
 - `linux-os`: nhanh tiep tuc phat trien va van hanh tren native Ubuntu 24.04 LTS.
 
-Trang thai hien tai: buoc 11 da hoan thanh; `linux-os` chon may Ubuntu 24.04 tai nha lam production target. Home-server runtime khong can AWS. Ma Terraform EC2 van duoc giu de hoc va tham khao, nhung khong `apply` trong luong self-host.
+Trang thai hien tai: native Ubuntu bootstrap, production home-server deployment va systemd recovery sau reboot da duoc xac minh tren nhanh `linux-os`. Public HTTPS tam hoan cho den khi chon hostname thuoc quyen so huu hoac mot phuong an tunnel thay the. Home-server runtime khong can AWS. Ma Terraform EC2 van duoc giu de hoc va tham khao, nhung khong `apply` trong luong self-host.
 
 Codex hoac nguoi tiep tuc du an tren Ubuntu phai doc `AGENTS.md` va `UBUNTU_HANDOFF.md` truoc khi thay doi repository.
 
@@ -22,7 +22,7 @@ cd API-Project
 bash scripts/bootstrap-ubuntu-24.04.sh
 ```
 
-Bootstrap se cau hinh repository chinh thuc cua Docker, HashiCorp va NodeSource, sau do cai Docker Engine/Compose v2, Terraform 1.x, Node.js 20 va cac cong cu kiem tra can thiet. Nen doc script truoc khi chay vi script su dung `sudo` de thay doi package repository cua may.
+Bootstrap se cau hinh repository chinh thuc cua Docker, HashiCorp va NodeSource, sau do cai Docker Engine/Compose v2, Terraform 1.x, Node.js 22 (toi thieu 22.11.0) va cac cong cu kiem tra can thiet. Nen doc script truoc khi chay vi script su dung `sudo` de thay doi package repository cua may.
 
 Dang xuat va dang nhap lai neu bootstrap vua them user vao group `docker`, sau do:
 

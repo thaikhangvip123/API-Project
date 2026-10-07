@@ -5,6 +5,7 @@ Last updated: 2026-10-07
 | Component | Version pin | Where declared | Notes |
 |---|---:|---|---|
 | Ubuntu host | `24.04 LTS` | Ubuntu bootstrap/autostart scripts; Terraform AMI reference | Native home-server target on `linux-os`; EC2 is optional |
+| Ubuntu host Node.js | `22.x` (minimum `22.11.0`) | Ubuntu bootstrap/readiness scripts | Host tooling and smoke tests; independent from container runtime |
 | Node.js base image | `node:20.11-alpine` | Implemented Node service Dockerfiles | Required by blueprint |
 | Python base image | `python:3.11.6-slim` | `soap-service/Dockerfile` | Matches the verified local Python 3.11.6 runtime |
 | Nginx | `nginx:1.27-alpine` | `docker-compose.yml`, `docker-compose.prod.yml` | Gateway image |

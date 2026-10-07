@@ -29,7 +29,7 @@ There is no virtual machine in this path. AWS/EC2 is not a runtime dependency. R
 
 ## Completed Preparation
 
-- `scripts/bootstrap-ubuntu-24.04.sh` installs Docker Engine/Compose v2, Node.js 20, Terraform 1.x, ShellCheck, and required utilities from official repositories.
+- `scripts/bootstrap-ubuntu-24.04.sh` installs Docker Engine/Compose v2, Node.js 22 (minimum 22.11.0), Terraform 1.x, ShellCheck, and required utilities from official repositories.
 - `scripts/verify-ubuntu-24.04.sh` checks the OS, native Linux filesystem, branch, tool versions, Docker access, executable bits, LF normalization, and ignore rules.
 - `platform/docker-compose.home.yml` adds local build contexts and local application image names to the production Compose definition.
 - `scripts/home-server-compose.sh` provides `config`, `build`, `deploy`, `up`, `restart`, `stop`, `status`, `verify`, and `logs` operations; all deployment mutations are serialized with a host-wide lock.
@@ -105,15 +105,16 @@ Record the native Ubuntu result in `platform/docs/VERIFICATION.md`. The Windows-
 
 ## Work Still Pending
 
-1. Run the native Ubuntu bootstrap and readiness verification.
-2. Build/deploy the production stack on Ubuntu and confirm every service is healthy.
-3. Reboot the physical machine and verify automatic recovery through systemd.
-4. Configure Cloudflare Tunnel, DNS, and its systemd service for public HTTPS access.
-5. Verify the public endpoint and cross-protocol application behavior from an external device.
-6. Define backup and restore procedures for PostgreSQL and `platform/.env.production`.
-7. Continue later roadmap work such as CI/CD only after the home-server runtime is proven.
+Native Ubuntu bootstrap/readiness, the optional development smoke run, production deployment, and physical reboot recovery are complete. The development smoke suite passed 9/9. After reboot, the production systemd unit was enabled and active, all ten production containers were healthy with zero restarts, and the gateway remained bound to `127.0.0.1:8080`.
 
-Cloudflare Tunnel is not yet configured. Until it is active, the application can run locally after boot but is not publicly reachable. If the physical computer is powered off or boots into Windows, the Ubuntu home server is unavailable.
+`cloudflared` is installed and its connector service is enabled and active. Public HTTPS is intentionally paused because no owned hostname has been selected. The private production environment may contain a provisional hostname; update it deliberately without replacing database credentials after the final hostname or alternative tunnel URL is chosen.
+
+1. Select an owned hostname or an alternative stable HTTPS tunnel, then align the production hostname/origin values and tunnel route.
+2. Verify the public endpoint and cross-protocol application behavior from an external device.
+3. Define backup and restore procedures for PostgreSQL and `platform/.env.production`.
+4. Continue later roadmap work such as CI/CD now that the home-server runtime is proven.
+
+Until a stable public hostname is active, the application runs locally after boot but is not publicly reachable. If the physical computer is powered off or boots into Windows, the Ubuntu home server is unavailable.
 
 ## Terraform Decision
 
@@ -130,4 +131,4 @@ Terraform can be used later for a real API-managed resource such as Cloudflare D
 - Production environment and private-key paths remain ignored.
 - Independent review found no remaining High, Medium, or Low findings in the autostart implementation.
 
-Native Ubuntu package installation, Docker runtime, systemd execution, physical reboot recovery, and public Cloudflare reachability remain intentionally unverified until the Ubuntu session.
+Native Ubuntu package installation, Docker runtime, development full-stack health, the 9/9 smoke suite, production systemd execution, and physical reboot recovery are now verified. Public DNS/TLS reachability remains intentionally unverified until an owned hostname or alternative HTTPS tunnel is selected.

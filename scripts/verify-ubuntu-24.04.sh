@@ -39,8 +39,8 @@ docker info >/dev/null 2>&1 || fail "Docker daemon is unavailable to the current
 
 node_version="$(node --version | sed 's/^v//')"
 node_major="${node_version%%.*}"
-[[ "${node_major}" == "20" ]] || fail "Node.js 20.x is required; detected ${node_version}."
-version_at_least "${node_version}" "20.11.0" || fail "Node.js 20.11.0 or newer is required; detected ${node_version}."
+[[ "${node_major}" == "22" ]] || fail "Node.js 22.x is required; detected ${node_version}."
+version_at_least "${node_version}" "22.11.0" || fail "Node.js 22.11.0 or newer is required; detected ${node_version}."
 
 terraform_version="$(terraform version -json | jq -r '.terraform_version')"
 terraform_major="${terraform_version%%.*}"

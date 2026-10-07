@@ -2,6 +2,22 @@
 
 > Chỉ ghi thay đổi kỹ thuật, cấu hình, phiên bản và kết quả xác minh của hệ thống. Không ghi danh tính bên thực hiện, công cụ nội bộ hoặc quá trình điều phối.
 
+## 2026-10-07 - Đồng bộ Node.js host trên Ubuntu
+
+- Chuyển NodeSource bootstrap của Ubuntu từ dòng 20.x sang 22.x và yêu cầu tối thiểu Node.js 22.11.0 trong readiness gate.
+- Giữ runtime Node.js của application container ở image `node:20.11-alpine`; host tooling và container runtime được quản lý độc lập.
+- Cập nhật tài liệu handoff, vận hành và version matrix để phản ánh rõ hai phạm vi phiên bản.
+- Readiness gate trên native Ubuntu đạt với Node.js 22.11.0, Terraform 1.16.5 và Docker Compose v5.6.0.
+- Development stack build thành công, 10/10 container healthy với restart count bằng 0 và smoke suite đạt 9/9; stack được dừng sau kiểm tra và giữ nguyên PostgreSQL volume.
+- Bổ sung bước cài dependency theo lockfile cho WebSocket và WebRTC trước khi chạy smoke suite trực tiếp từ host.
+
+## 2026-10-07 - Xác minh production home server trên Ubuntu
+
+- Build và deploy production stack thành công với private environment mới trên Ubuntu; 10/10 container đạt healthy và gateway chỉ bind `127.0.0.1:8080`.
+- Cài và enable `internship-api-platform.service`, sau đó xác minh recovery thành công sau khi reboot vật lý; toàn bộ container giữ restart count bằng 0.
+- Cài `cloudflared` 2026.10.0 từ APT repository chính thức và enable connector service; public DNS/TLS được tạm hoãn cho đến khi chọn hostname thuộc quyền sở hữu hoặc tunnel HTTPS thay thế.
+- Giữ `.env`, `.env.production`, tunnel credential và Docker volumes ngoài Git; không tuyên bố public endpoint sẵn sàng khi DNS chưa được xác minh.
+
 ## 2026-10-07 - Chuẩn bị handoff sang Ubuntu 24.04
 
 - Tách nhánh `linux-os` từ checkpoint hiện tại để tiếp tục trên Ubuntu 24.04 mà không thay đổi nhánh `main` dùng cho Windows.

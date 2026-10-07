@@ -81,7 +81,11 @@ These results complete the local and repository-security portions of roadmap ste
 - Local and production Compose files parsed successfully with sanitized temporary configuration.
 - All 59 Node.js service tests passed. The 9 SOAP tests were not rerun because the available Windows Python runtime is 3.12 while the service is pinned to Python 3.11.6; the previous pinned-runtime result remains 9/9.
 - Bash syntax checks passed for the startup, bootstrap, readiness, and EC2 verification scripts; ShellCheck 0.10.0 reported no warning-or-higher findings.
-- Native Ubuntu 24.04 package installation, Docker runtime, fresh `.env` generation, full-stack health, smoke testing, and a live AWS plan remain post-clone verification items.
+- A later native Ubuntu 24.04 run passed the readiness gate with Node.js 22.11.0, Terraform 1.16.5, Docker Engine access, and Docker Compose v5.6.0.
+- The native run generated a fresh mode-`0600` development environment and PostgreSQL volume, built all eight application images, and brought all ten containers to healthy state with zero restarts.
+- The cross-protocol smoke suite passed 9/9 on the Ubuntu host; the development stack was then stopped while preserving its PostgreSQL volume.
+- Production deployment and physical reboot recovery were subsequently verified: the enabled systemd unit completed successfully, all ten production containers were healthy with zero restarts, and the gateway remained loopback-only on `127.0.0.1:8080`.
+- `cloudflared` 2026.10.0 is installed and its connector service is enabled and active. Public DNS/TLS reachability and a live AWS plan remain unverified; no public-readiness claim is made without an owned hostname.
 
 ## Home Server Autostart Definition
 
@@ -89,4 +93,4 @@ These results complete the local and repository-security portions of roadmap ste
 - `home-server-compose.sh` separates the initial image build/deploy path from the boot-time `up` path, validates mode-`0600` production configuration, removes inherited shell overrides, and serializes mutations with a host-wide lock.
 - `install-home-server-autostart.sh` generates fresh production secrets and exact HTTPS origins, refuses credential regeneration when an existing PostgreSQL volume would be orphaned, verifies the initial stack health, validates the generated systemd unit, and enables it only after deployment succeeds.
 - `verify-home-server-autostart.sh` checks boot enablement, active systemd state, production environment permissions, Compose status, local gateway health, and optionally Cloudflare service plus public HTTPS health.
-- Native Ubuntu systemd execution, reboot recovery, Cloudflare Tunnel reachability, and full cross-protocol smoke testing remain required after the repository is moved to the home server.
+- Native Ubuntu systemd execution and physical reboot recovery are verified. Public tunnel reachability and the final external-device cross-protocol run remain pending until an owned hostname or alternative stable HTTPS tunnel is selected.

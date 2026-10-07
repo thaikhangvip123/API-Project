@@ -12,11 +12,11 @@ Tài liệu này hướng dẫn chạy và kiểm tra hệ thống trên native 
 
 ## 2. Yêu cầu Ubuntu
 
-- Native Ubuntu 24.04 LTS hoặc máy ảo Ubuntu 24.04. Không chạy project từ filesystem Windows/NTFS được mount vào Linux.
+- Native Ubuntu 24.04 LTS trên máy home server vật lý. Không dùng máy ảo và không chạy project từ filesystem Windows/NTFS được mount vào Linux.
 - Docker Engine và Docker Compose v2 đang hoạt động.
 - User hiện tại có quyền chạy Docker mà không cần chuyển sang root shell.
 - Bash, `od`, `stat`, `mktemp`, `flock` (gói `util-linux`), `/run/lock` có quyền ghi và port `80` chưa bị ứng dụng khác chiếm.
-- Node.js 20 chỉ cần khi chạy full smoke script từ host.
+- Node.js 22 (tối thiểu 22.11.0) chỉ cần khi chạy full smoke script từ host. Runtime Node.js trong container được pin độc lập.
 
 Kiểm tra nhanh:
 
@@ -196,7 +196,14 @@ XML
 
 ## 8. Full smoke test
 
-Chạy sau khi toàn bộ stack healthy và host có Node.js 20:
+Chạy sau khi toàn bộ stack healthy và host có Node.js 22. Smoke script dùng client library của WebSocket và WebRTC trực tiếp từ hai service, vì vậy cài đúng dependency theo lockfile trước:
+
+```bash
+(cd services/websocket-service && npm ci)
+(cd services/webrtc-signaling && npm ci)
+```
+
+Các thư mục `node_modules` này chỉ phục vụ test trên host, đã bị Git ignore và không được sao chép từ Windows. Sau đó chạy:
 
 ```bash
 export WEBHOOK_SECRET="$(sed -n 's/^WEBHOOK_SECRET=//p' .env | head -n 1)"
