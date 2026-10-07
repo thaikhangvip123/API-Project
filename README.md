@@ -14,6 +14,7 @@ Tren Ubuntu moi, chi can cai Git truoc khi clone:
 ```bash
 sudo apt-get update
 sudo apt-get install -y git
+cd "$HOME"
 git clone --branch linux-os --single-branch https://github.com/thaikhangvip123/API-Project.git
 cd API-Project
 bash scripts/bootstrap-ubuntu-24.04.sh
@@ -24,10 +25,16 @@ Bootstrap se cau hinh repository chinh thuc cua Docker, HashiCorp va NodeSource,
 Dang xuat va dang nhap lai neu bootstrap vua them user vao group `docker`, sau do:
 
 ```bash
-cd API-Project
+cd "$HOME/API-Project"
 bash scripts/verify-ubuntu-24.04.sh
+```
+
+Neu muon kiem tra development stack truoc khi cai home server production, chay tuy chon:
+
+```bash
 cd platform
 bash start.sh
+bash start.sh --stop
 ```
 
 Lan chay `start.sh` dau tien se tao `platform/.env` moi bang secret ngau nhien va tao PostgreSQL volume moi. Khong sao chep `.env`, Docker volume, `node_modules`, `.terraform`, file `*.tfplan` hoac credential tu Windows sang Ubuntu.
@@ -69,7 +76,14 @@ Chi tiet van hanh nam trong `platform/docs/OPERATIONS.md`; chi tiet ha tang nam 
 
 ## Home server tu khoi dong sau reboot
 
-Sau khi da clone tren Ubuntu 24.04, chay bootstrap va co domain du kien cho Cloudflare Tunnel, cai production stack cung systemd unit:
+Sau khi da clone tren Ubuntu 24.04, chay bootstrap va co domain du kien cho Cloudflare Tunnel, cai production stack cung systemd unit. Neu da chay development stack tuy chon o tren, dung no truoc:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/platform"
+bash start.sh --stop
+```
+
+Sau do cai production stack:
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
