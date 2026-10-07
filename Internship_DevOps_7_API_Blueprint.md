@@ -279,9 +279,25 @@ Không đưa thao tác xóa volume vào workflow hằng ngày. Reset dữ liệu
 
 ---
 
-## 6. Triển khai hạ tầng Cloud (EC2)
+## 6. Triển khai hạ tầng
 
-### 6.1 Terraform tối giản
+### 6.1 Home server Ubuntu 24.04 — deployment target chính
+
+Nhánh `linux-os` triển khai production trực tiếp trên máy vật lý Ubuntu 24.04 tại nhà. Tám application image được build local, production Compose tự khởi động bằng systemd và gateway chỉ bind `127.0.0.1:8080` để Cloudflare Tunnel cung cấp HTTPS public.
+
+```text
+Ubuntu boot
+  -> Docker Engine
+  -> internship-api-platform.service
+  -> docker-compose.prod.yml + docker-compose.home.yml
+  -> 127.0.0.1:8080
+  -> Cloudflare Tunnel
+  -> public HTTPS domain
+```
+
+Home-server runtime không dùng EC2, Elastic IP, AWS credential hoặc AWS Terraform state.
+
+### 6.2 Terraform AWS — bài thực hành và deployment target tham khảo
 
 ```text
 infrastructure/terraform/
@@ -296,7 +312,7 @@ Security Group tối thiểu:
 - Port `443` (TLS endpoint); port `80` chỉ dùng để redirect sang HTTPS nếu cần
 - Không mở port riêng cho từng service nội bộ; WebRTC dùng STUN công khai nên không cần mở dải UDP TURN.
 
-### 6.2 Các bước triển khai
+### 6.3 Các bước EC2 tham khảo
 
 1. `terraform apply` → tạo EC2 (Ubuntu 24.04 LTS, tối thiểu `t3.small`)
 2. Cài Docker + Docker Compose plugin qua `user_data` script (tự động khi EC2 khởi động lần đầu)
@@ -323,11 +339,11 @@ Production Compose mặc định chỉ bind gateway vào `127.0.0.1:8080`. Khôn
 | 9 | Code `webrtc-signaling` | Video call 1-1 giữa 2 tab trình duyệt |
 | 10 | Ghép toàn bộ bằng `docker-compose.yml` + Nginx gateway | Test local toàn hệ thống |
 | 11 | **Chạy cổng local/repository của Post-Update Verification Workflow (Mục 8)** | Test, build, runtime, cấu hình production và repository scan xanh; CI ghi `N/A` đến bước 13 |
-| 12 | Viết Terraform, tạo EC2 | EC2 sẵn sàng, SSH được |
+| 12 | Chuẩn bị Ubuntu 24.04 home server + systemd autostart; giữ Terraform AWS làm bài thực hành | Production Compose tự khởi động sau reboot |
 | 13 | Viết CI (`ci.yml`) | Build/test tự động chạy xanh trên GitHub |
-| 14 | Viết CD (`cd.yml`) | Deploy tự động lên EC2 khi merge `main` |
-| 15 | Deploy lần đầu lên EC2 | Truy cập được qua IP/domain |
-| 16 | **Chạy lại Post-Update Verification Workflow (Mục 8)** trên môi trường cloud | Toàn bộ workflow xanh trên production |
+| 14 | Viết CD (`cd.yml`) | Deploy tự động lên home server sau khi CI pass |
+| 15 | Cấu hình Cloudflare Tunnel và deploy public lần đầu | Truy cập được qua HTTPS domain |
+| 16 | **Chạy lại Post-Update Verification Workflow (Mục 8)** trên home server | Toàn bộ workflow xanh trên production |
 | 17 | Viết README tổng + báo cáo đồ án | Tài liệu hoàn chỉnh nộp/trình bày |
 
 ---
@@ -356,9 +372,9 @@ Production Compose mặc định chỉ bind gateway vào `127.0.0.1:8080`. Khôn
 
 ### 8.2 Checklist hậu kiểm khi deploy lên Cloud
 
-- [ ] Sau khi CD chạy xong, kiểm tra `docker compose ps` trên EC2 — toàn bộ container ở trạng thái `Up`, không có container `Restarting`/`Exited`
+- [ ] Sau khi CD chạy xong, kiểm tra production Compose trên deployment target — toàn bộ container ở trạng thái `Up`, không có container `Restarting`/`Exited`
 - [ ] Gọi thử từng endpoint qua domain/IP public (không chỉ localhost)
-- [ ] Kiểm tra log trên EC2: `docker compose -f docker-compose.prod.yml logs --tail=200`
+- [ ] Kiểm tra log production qua deployment wrapper: `bash scripts/home-server-compose.sh logs`
 - [ ] Nếu có lỗi: gọi cùng deployment script dưới host-wide lock với manifest rollback đã xác minh; manifest phải chứa immutable image digest hoặc commit SHA được registry bảo vệ, không thao tác trực tiếp với Compose hoặc mutable image reference
 - [ ] Cập nhật kết quả hậu kiểm công khai trong `docs/VERIFICATION.md`; bằng chứng chi tiết chứa metadata môi trường phải giữ local và không commit
 

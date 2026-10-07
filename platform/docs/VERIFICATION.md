@@ -65,7 +65,7 @@ rm -f -- "${empty_env}"
 
 ## Scope
 
-These results complete the local and repository-security portions of roadmap step 11. The GitHub CI check in the full post-update workflow becomes applicable after CI is implemented in step 13. Terraform, CD, EC2 deployment, TLS termination, cloud backup, and production rollback verification belong to later roadmap steps and are not claimed complete here.
+These results complete the local and repository-security portions of roadmap step 11. The GitHub CI check in the full post-update workflow becomes applicable after CI is implemented in step 13. Home-server systemd runtime, CD, Cloudflare Tunnel, TLS reachability, backup, and production rollback verification belong to later roadmap steps and are not claimed complete here. AWS Terraform remains an optional validated exercise rather than a runtime dependency.
 
 ## Step 12 Infrastructure Definition
 
@@ -82,3 +82,11 @@ These results complete the local and repository-security portions of roadmap ste
 - All 59 Node.js service tests passed. The 9 SOAP tests were not rerun because the available Windows Python runtime is 3.12 while the service is pinned to Python 3.11.6; the previous pinned-runtime result remains 9/9.
 - Bash syntax checks passed for the startup, bootstrap, readiness, and EC2 verification scripts; ShellCheck 0.10.0 reported no warning-or-higher findings.
 - Native Ubuntu 24.04 package installation, Docker runtime, fresh `.env` generation, full-stack health, smoke testing, and a live AWS plan remain post-clone verification items.
+
+## Home Server Autostart Definition
+
+- `docker-compose.home.yml` adds local build contexts to the production services while preserving the production network, healthchecks, log rotation, loopback gateway bind, and restart policies.
+- `home-server-compose.sh` separates the initial image build/deploy path from the boot-time `up` path, validates mode-`0600` production configuration, removes inherited shell overrides, and serializes mutations with a host-wide lock.
+- `install-home-server-autostart.sh` generates fresh production secrets and exact HTTPS origins, refuses credential regeneration when an existing PostgreSQL volume would be orphaned, verifies the initial stack health, validates the generated systemd unit, and enables it only after deployment succeeds.
+- `verify-home-server-autostart.sh` checks boot enablement, active systemd state, production environment permissions, Compose status, local gateway health, and optionally Cloudflare service plus public HTTPS health.
+- Native Ubuntu systemd execution, reboot recovery, Cloudflare Tunnel reachability, and full cross-protocol smoke testing remain required after the repository is moved to the home server.

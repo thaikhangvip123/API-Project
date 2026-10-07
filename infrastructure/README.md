@@ -2,6 +2,8 @@
 
 This directory provisions the Ubuntu host required by roadmap step 12. It does not deploy application images, configure GitHub Actions, or expose the loopback-bound production gateway; those remain steps 13-15.
 
+On the `linux-os` branch, the active deployment target is the physical Ubuntu 24.04 home server documented at the repository root. This AWS module is retained for Terraform practice and as an optional reference deployment; do not run `terraform apply` for the self-hosted path.
+
 ## Provisioned resources
 
 - Ubuntu Server 24.04 LTS EC2 instance (`t3.small` by default)

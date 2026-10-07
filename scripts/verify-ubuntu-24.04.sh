@@ -30,7 +30,7 @@ case "${filesystem_type}" in
     ;;
 esac
 
-for command_name in git docker node npm terraform aws stat flock od openssl curl; do
+for command_name in git docker node npm terraform stat flock od openssl curl; do
   command -v "${command_name}" >/dev/null 2>&1 || fail "Missing required command: ${command_name}"
 done
 
@@ -47,13 +47,21 @@ terraform_major="${terraform_version%%.*}"
 [[ "${terraform_major}" == "1" ]] || fail "Terraform 1.x is required; detected ${terraform_version}."
 version_at_least "${terraform_version}" "1.7.0" || fail "Terraform 1.7.0 or newer is required; detected ${terraform_version}."
 
-for script_path in platform/start.sh scripts/bootstrap-ubuntu-24.04.sh scripts/verify-ubuntu-24.04.sh infrastructure/scripts/verify-ec2.sh; do
+for script_path in \
+  platform/start.sh \
+  scripts/bootstrap-ubuntu-24.04.sh \
+  scripts/verify-ubuntu-24.04.sh \
+  scripts/home-server-compose.sh \
+  scripts/install-home-server-autostart.sh \
+  scripts/verify-home-server-autostart.sh \
+  infrastructure/scripts/verify-ec2.sh; do
   tracked_mode="$(git -C "${repo_root}" ls-files --stage -- "${script_path}" | awk '{print $1}')"
   [[ "${tracked_mode}" == "100755" ]] || fail "Git executable mode is missing for ${script_path}."
   [[ "$(git -C "${repo_root}" check-attr eol -- "${script_path}" | awk '{print $3}')" == "lf" ]] || fail "Git LF normalization is missing for ${script_path}."
 done
 
 git -C "${repo_root}" check-ignore --quiet platform/.env || fail "platform/.env must remain ignored."
+git -C "${repo_root}" check-ignore --quiet platform/.env.production || fail "platform/.env.production must remain ignored."
 git -C "${repo_root}" check-ignore --quiet infrastructure/terraform/step12-ubuntu24.tfplan || fail "Terraform plan files must remain ignored."
 
 printf 'Ubuntu 24.04 readiness verification passed.\n'

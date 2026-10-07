@@ -46,6 +46,59 @@ bash start.sh
 
 Script giữ nguyên `.env` và PostgreSQL volume khi chạy lại. `.env` bị Git ignore, không được commit, in ra log hoặc gửi công khai. Nếu mất `.env` trong khi volume database còn tồn tại, phải khôi phục đúng file cũ; mật khẩu mới không thể mở database đã khởi tạo bằng mật khẩu cũ.
 
+### Home server production tự khởi động
+
+`start.sh` dành cho local development. Home server public sử dụng production Compose cùng override build local và một systemd unit riêng:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+bash scripts/install-home-server-autostart.sh demo.example.com
+```
+
+Installer chỉ chạy trên native Ubuntu 24.04 và thực hiện một lần:
+
+- tạo `platform/.env.production` bằng secret ngẫu nhiên, mode `0600`;
+- từ chối tạo credential mới nếu PostgreSQL volume cũ còn tồn tại nhưng file production environment bị mất;
+- giữ gateway tại `127.0.0.1:8080` cho Cloudflare Tunnel;
+- build tám application image trực tiếp trên home server;
+- khởi động production Compose và chờ healthcheck;
+- cài, enable và start `internship-api-platform.service`.
+
+Sau reboot, systemd gọi `scripts/home-server-compose.sh up`; không build hoặc pull lại image trong boot path. Container đã có `restart: unless-stopped`, còn systemd reconcile Compose và chờ toàn bộ stack healthy.
+
+Lệnh vận hành:
+
+```bash
+sudo systemctl status internship-api-platform.service
+sudo systemctl restart internship-api-platform.service
+sudo systemctl stop internship-api-platform.service
+sudo systemctl start internship-api-platform.service
+sudo journalctl -u internship-api-platform.service -b
+bash scripts/home-server-compose.sh status
+bash scripts/home-server-compose.sh verify
+bash scripts/home-server-compose.sh logs gateway
+```
+
+Sau khi reboot Ubuntu, xác minh systemd, Compose và local health:
+
+```bash
+bash scripts/verify-home-server-autostart.sh
+```
+
+Khi Cloudflare Tunnel đã được cài, kiểm tra thêm service và public HTTPS endpoint:
+
+```bash
+bash scripts/verify-home-server-autostart.sh https://demo.example.com
+```
+
+Sau khi cập nhật source, chủ động build và deploy lại:
+
+```bash
+bash scripts/home-server-compose.sh deploy
+```
+
+Cloudflare Tunnel có systemd service riêng. Application vẫn tự chạy nếu tunnel chưa được cài, nhưng thiết bị ngoài Internet chỉ truy cập được khi `cloudflared.service` cũng enabled và active. Home-server runtime này không cần AWS; Terraform AWS được giữ như bài thực hành và target tham khảo, không chạy `apply` cho luồng self-host.
+
 Kết quả thành công hiển thị các địa chỉ chính:
 
 ```text

@@ -47,17 +47,6 @@ sudo apt-get install -y --no-install-recommends \
 
 tmp_dir="$(mktemp -d)"
 architecture="$(dpkg --print-architecture)"
-case "${architecture}" in
-  amd64)
-    aws_architecture="x86_64"
-    ;;
-  arm64)
-    aws_architecture="aarch64"
-    ;;
-  *)
-    fail "AWS CLI v2 is unsupported on architecture ${architecture}."
-    ;;
-esac
 
 curl --fail --silent --show-error --location \
   https://download.docker.com/linux/ubuntu/gpg \
@@ -86,16 +75,6 @@ printf 'deb [arch=%s signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nod
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
   containerd.io docker-buildx-plugin docker-ce docker-ce-cli docker-compose-plugin nodejs terraform
-
-curl --fail --silent --show-error --location \
-  "https://awscli.amazonaws.com/awscli-exe-linux-${aws_architecture}.zip" \
-  --output "${tmp_dir}/awscliv2.zip"
-unzip -q "${tmp_dir}/awscliv2.zip" -d "${tmp_dir}"
-if command -v aws >/dev/null 2>&1; then
-  sudo "${tmp_dir}/aws/install" --update
-else
-  sudo "${tmp_dir}/aws/install"
-fi
 
 sudo systemctl enable --now docker
 

@@ -6,10 +6,18 @@
 
 - Tách nhánh `linux-os` từ checkpoint hiện tại để tiếp tục trên Ubuntu 24.04 mà không thay đổi nhánh `main` dùng cho Windows.
 - Nâng target Terraform EC2 từ Ubuntu 22.04 lên Ubuntu 24.04 LTS và bổ sung assertion cho tag hệ điều hành.
-- Thêm bootstrap và readiness verification cho máy Ubuntu mới, gồm Docker Engine/Compose v2, Node.js 20, Terraform 1.x và AWS CLI v2.
+- Thêm bootstrap và readiness verification cho máy Ubuntu mới, gồm Docker Engine/Compose v2, Node.js 20 và Terraform 1.x.
 - Chuẩn hóa Git line ending thành LF và executable bit cho shell script để clone trên Linux có thể chạy trực tiếp.
 - Chuyển checkpoint bước 12 sang kế hoạch mới: tạo `.env`, PostgreSQL volume, SSH key và Terraform plan mới trên Ubuntu; không chuyển secret/runtime state từ Windows.
 - Xác minh Terraform format/validate và test đạt 7/7, Compose local/production parse thành công, 59/59 test Node.js pass, Bash syntax pass và ShellCheck không có warning; runtime native Ubuntu và 9 test SOAP trên Python 3.11.6 được dành cho bước hậu kiểm sau khi clone.
+
+## 2026-10-07 - Chuẩn bị home-server autostart
+
+- Bổ sung Compose override để build tám application image trực tiếp trên Ubuntu home server, không phụ thuộc EC2 hoặc container registry khi reboot.
+- Thêm production wrapper có host-wide lock, cô lập shell environment, kiểm tra file secret mode `0600` và tách rõ `deploy` khỏi boot-time `up`.
+- Thêm installer tạo production secret/origin theo domain, bảo vệ volume khi mất file secret, build và health-check stack trước khi enable systemd.
+- Cấu hình `internship-api-platform.service` chạy sau Docker/network và tự reconcile production Compose ở mỗi lần boot mà không build lại image.
+- Giữ gateway loopback-only cho Cloudflare Tunnel; public access chỉ được bật sau khi tunnel riêng đã cấu hình và chạy dưới systemd.
 
 ## 2026-09-02 - Bước 1: Khởi tạo nền tảng
 
