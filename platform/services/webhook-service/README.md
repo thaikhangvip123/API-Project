@@ -46,6 +46,4 @@ docker run --rm -p 3000:3000 --env-file /secure/path/webhook-service.env interns
 bash ../../start.sh webhook-service gateway
 ```
 
-See `docs/OPERATIONS.md` for a signed request example through the gateway.
-
 Status: implemented with signature, validation, duplicate, retry, payload-limit, and health tests.

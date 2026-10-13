@@ -10,6 +10,7 @@ All external traffic enters through the Nginx gateway. Internal services communi
 
 | Public path | Service | API type |
 |---|---|---|
+| `/`, `/assets/*` | `gateway` | Static API portal |
 | `/api/auth/*` | `auth-service` | REST + JWT |
 | `/api/users/*` | `user-service` | REST CRUD |
 | `/graphql` | `graphql-service` | GraphQL |
@@ -47,6 +48,7 @@ All external traffic enters through the Nginx gateway. Internal services communi
 ```text
 Client
   -> Nginx gateway
+     -> /              -> static API portal (status, Auth/JWT, API demos, realtime links)
      -> /api/auth/*  -> auth-service (in-memory auth demo)
      -> /api/users/* -> user-service -> PostgreSQL
      -> /graphql     -> graphql-service
@@ -61,11 +63,11 @@ Client
 
 Only the gateway publishes a host port. PostgreSQL and gRPC stay private on `platform-net`. WebSocket, webhook, SOAP, and WebRTC signaling are implemented in steps 6-9. WebRTC media is peer-to-peer and does not pass through the server.
 
-For local development, browsers treat `http://localhost` as a secure context. A remote EC2/IP/domain deployment must terminate HTTPS at the gateway before browser camera and microphone APIs will work. Google STUN is sufficient for the internship demo, but restrictive NAT/firewall combinations may require TURN in a production extension.
+For local development, browsers treat `http://localhost` as a secure context. A remote domain deployment must terminate HTTPS before browser camera and microphone APIs will work. Google STUN is sufficient for the internship demo, but restrictive NAT/firewall combinations may require TURN in a production extension.
 
 ## Current Roadmap Status
 
-- Step 1 complete: folder structure, gateway routing design, compose skeleton, version matrix, and operation/checklist docs.
+- Step 1 complete: folder structure, gateway routing design, Compose skeleton, and version matrix.
 - Step 2 implemented: `auth-service` REST + JWT code, tests, Dockerfile, README, and Compose healthcheck are in place.
 - Step 2 Docker runtime verification complete: standalone image/container and Compose gateway flow pass.
 - Step 3 implemented: `user-service` REST CRUD uses PostgreSQL through Prisma, with an initial migration, tests, Dockerfile, README, and Compose healthcheck.
@@ -76,5 +78,9 @@ For local development, browsers treat `http://localhost` as a secure context. A 
 - Step 7 complete: `webhook-service` verifies HMAC-SHA256 against the raw body, validates bounded JSON payloads, and provides TTL-based bounded idempotency with safe retry behavior; accepted, duplicate, and invalid-signature flows were verified through the gateway.
 - Step 8 complete: `soap-service` publishes a WSDL and a bounded integer-to-English-words SOAP operation on Python 3.11.6 with exact dependency pins; its Docker image, healthcheck, WSDL, and SOAP request path pass through the Nginx gateway.
 - Step 9 signaling complete: `webrtc-signaling` provides a two-person browser room, bounded/validated offer-answer-ICE relay, heartbeat cleanup, Google STUN configuration, production origin guards, a responsive video-call client, Docker healthcheck, and gateway runtime verification. Final camera/microphone media confirmation requires user permission in two browser tabs.
-- Step 10 complete: all ten containers build and start together, only Nginx publishes a host port, all healthchecks pass without restarts, and the gateway smoke suite covers every public API plus the internal gRPC-backed GraphQL path. Production Compose supports configurable registry/tag values, bounded Docker logs, restart policies, and non-root application images for EC2 readiness.
-- Step 12 infrastructure is defined with Terraform for an Ubuntu 22.04 EC2 host, encrypted storage, IMDSv2, a stable Elastic IP, restricted SSH, and Docker Compose v2 bootstrap. Application delivery and TLS termination remain later roadmap steps.
+- Step 10 complete: all ten containers build and start together, only Nginx publishes a host port, all healthchecks pass without restarts, and the gateway smoke suite covers every public API plus the internal gRPC-backed GraphQL path. Production Compose supports configurable registry/tag values, bounded Docker logs, restart policies, and non-root application images for deployment readiness.
+- Step 11 pre-infrastructure verification is complete: tests, builds, runtime checks, production configuration validation, and repository security scans passed; GitHub CI remains `N/A` until step 13.
+- Step 12 home-server runtime is active on native Ubuntu 24.04: application images build locally, production Compose remains loopback-bound, and systemd reconciles the stack after every boot. Native reboot recovery is verified.
+- Step 13 is the next implementation task: create the required GitHub CI workflow. The final step 9 camera/microphone media check remains a manual acceptance item in two browser tabs.
+- Step 15 was completed ahead of steps 13-14: Cloudflare Tunnel publishes `https://api.jcb-services.me`, public HTTPS health and the 9/9 cross-protocol smoke suite passed, and Cloudflare Access now redirects unauthenticated requests before they reach the application.
+- The AWS Terraform configuration remains validated as an optional infrastructure exercise and reference target; the active home-server runtime has no AWS dependency.

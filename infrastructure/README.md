@@ -1,10 +1,12 @@
-# EC2 Infrastructure (Roadmap Step 12)
+# Optional EC2 Infrastructure Reference
 
-This directory provisions the Ubuntu host required by roadmap step 12. It does not deploy application images, configure GitHub Actions, or expose the loopback-bound production gateway; those remain steps 13-15.
+This directory contains an optional Terraform exercise for provisioning an Ubuntu host on AWS. It does not deploy application images, configure GitHub Actions, or expose the loopback-bound production gateway.
+
+On the `linux-os` branch, the active deployment target is the physical Ubuntu 24.04 home server documented at the repository root. This AWS module is retained for Terraform practice and as an optional reference deployment; do not run `terraform apply` for the self-hosted path.
 
 ## Provisioned resources
 
-- Ubuntu Server 22.04 LTS EC2 instance (`t3.small` by default)
+- Ubuntu Server 24.04 LTS EC2 instance (`t3.small` by default)
 - encrypted 20 GiB gp3 root volume and IMDSv2-only metadata access
 - standard T3 CPU credits and basic monitoring to prevent optional burst/monitoring charges
 - stable Elastic IP
@@ -25,7 +27,7 @@ terraform fmt -check
 terraform validate
 terraform test
 
-export TF_VAR_ssh_public_key="$(cat "$HOME/.ssh/internship-ec2.pub")"
+export TF_VAR_ssh_public_key="$(cat "$HOME/.ssh/internship-ec2-ubuntu24.pub")"
 export TF_VAR_ssh_ingress_cidr="$(curl --fail --silent --show-error https://checkip.amazonaws.com)/32"
 terraform plan -out=step12.tfplan
 terraform apply step12.tfplan
@@ -39,7 +41,7 @@ Wait for EC2 status checks and cloud-init to finish. Verify the SSH host-key fin
 
 ```bash
 terraform output public_ip
-SSH_IDENTITY_FILE="$HOME/.ssh/internship-ec2" \
+SSH_IDENTITY_FILE="$HOME/.ssh/internship-ec2-ubuntu24" \
   bash ../scripts/verify-ec2.sh deploy "$(terraform output -raw public_ip)"
 ```
 
@@ -47,31 +49,32 @@ The verification requires the matching private key to be available to SSH (for e
 
 The Elastic IP and running EC2 instance incur AWS charges. Use `terraform destroy` only when decommissioning is intentional and state is available; destroying the host is not part of the normal deployment workflow.
 
-At the Singapore on-demand rates checked during step 12, the always-on baseline is approximately USD 24.84/month before data transfer (t3.small compute, 20 GiB gp3, and one in-use public IPv4). Stopping EC2 pauses compute charges, but the volume and public IPv4 continue to incur charges until released or destroyed.
+At the Singapore on-demand rates recorded during the earlier AWS exercise, the always-on baseline was approximately USD 24.84/month before data transfer (t3.small compute, 20 GiB gp3, and one in-use public IPv4). Recheck current pricing before use. Stopping EC2 pauses compute charges, but the volume and public IPv4 continue to incur charges until released or destroyed.
 
-## Resume checkpoint
+## Optional exercise checkpoint
 
-Step 12 is intentionally paused before resource creation. No Terraform apply has run and no project-tagged EC2 instance or Elastic IP exists yet.
+No Terraform apply has run, no project-tagged EC2 instance or Elastic IP exists, and there is no Terraform state to migrate from Windows. If this optional exercise is resumed, create a fresh plan on Ubuntu 24.04 with a new SSH key and the current public IP.
 
+- Git branch: `linux-os`
 - AWS region: `ap-southeast-1`
-- CloudShell working directory: `~/step12-infra`
-- Saved reviewed plan: `~/step12-infra/step12-final.tfplan`
-- Terraform binary: `~/bin/terraform`
-- Local private key: `.ssh/internship-ec2` (Git ignored; never uploaded)
-- CloudShell runtime variables: `~/step12-infra/step12.auto.tfvars` (mode `0600`)
+- Expected target OS: Ubuntu Server 24.04 LTS
+- Suggested private key: `~/.ssh/internship-ec2-ubuntu24` (never uploaded or committed)
+- Runtime variables: export them in the current shell or keep them in a private mode-`0600` tfvars file outside Git
 
-Before resuming, verify the current operator public IP still matches the SSH `/32`, refresh the plan, review its cost and `5 add, 0 change, 0 destroy` expectation, and obtain an explicit confirmation before apply:
+Before running the optional exercise, verify AWS authentication and the current operator public IP, initialize this checkout, and create a new reviewed plan. Expect `5 add, 0 change, 0 destroy` while the module has no state:
 
 ```bash
-cd "$HOME/step12-infra"
-export PATH="$HOME/bin:$PATH"
+cd infrastructure/terraform
 aws sts get-caller-identity >/dev/null
+terraform init
+export TF_VAR_ssh_public_key="$(cat "$HOME/.ssh/internship-ec2-ubuntu24.pub")"
+export TF_VAR_ssh_ingress_cidr="$(curl --fail --silent --show-error https://checkip.amazonaws.com)/32"
 terraform validate
 terraform test
-terraform plan -input=false -out=step12-final.tfplan
+terraform plan -input=false -out=step12-ubuntu24.tfplan
 ```
 
-Only after reviewing the refreshed plan should the operator run `terraform apply step12-final.tfplan`, wait for cloud-init, and execute the SSH bootstrap verification.
+Only after reviewing the refreshed plan should the operator run `terraform apply step12-ubuntu24.tfplan`, wait for cloud-init, and execute the SSH bootstrap verification with `SSH_IDENTITY_FILE="$HOME/.ssh/internship-ec2-ubuntu24"`.
 
 ## Security boundaries
 

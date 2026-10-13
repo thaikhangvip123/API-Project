@@ -39,6 +39,11 @@ run "secure_defaults" {
   }
 
   assert {
+    condition     = aws_instance.platform.tags["OS"] == "Ubuntu-24.04"
+    error_message = "The EC2 host must target Ubuntu 24.04 LTS."
+  }
+
+  assert {
     condition     = aws_instance.platform.metadata_options[0].http_tokens == "required"
     error_message = "IMDSv2 must be required."
   }

@@ -2,6 +2,47 @@
 
 > Chỉ ghi thay đổi kỹ thuật, cấu hình, phiên bản và kết quả xác minh của hệ thống. Không ghi danh tính bên thực hiện, công cụ nội bộ hoặc quá trình điều phối.
 
+## 2026-10-13 - Kích hoạt public HTTPS qua Cloudflare Tunnel
+
+- Cấu hình Cloudflare DNS cho `jcb-services.me` và published application `api.jcb-services.me` trỏ về gateway loopback `http://localhost:8080` qua tunnel hiện có.
+- Đồng bộ `PUBLIC_HOSTNAME`, Socket.IO CORS origin và WebRTC signaling origin với `https://api.jcb-services.me`, sau đó recreate production stack mà không thay đổi PostgreSQL volume hoặc secret.
+- Xác minh `cloudflared` và `internship-api-platform.service` đều enabled/active, 10/10 service healthy, local gateway trả health thành công và public HTTPS verification pass.
+- Chạy public cross-protocol smoke suite qua tunnel đạt 9/9 cho REST/JWT, PostgreSQL CRUD, GraphQL/gRPC, Socket.IO, webhook, SOAP và WebRTC signaling.
+- Bật Cloudflare Access cho toàn bộ hostname; request không có phiên đăng nhập tới `/health`, `/api/users` và `/graphql` đều nhận HTTP 302 tới trang Access, không đi thẳng vào application.
+
+## 2026-10-07 - Đồng bộ Node.js host trên Ubuntu
+
+- Chuyển NodeSource bootstrap của Ubuntu từ dòng 20.x sang 22.x và yêu cầu tối thiểu Node.js 22.11.0 trong readiness gate.
+- Giữ runtime Node.js của application container ở image `node:20.11-alpine`; host tooling và container runtime được quản lý độc lập.
+- Cập nhật tài liệu handoff, vận hành và version matrix để phản ánh rõ hai phạm vi phiên bản.
+- Readiness gate trên native Ubuntu đạt với Node.js 22.11.0, Terraform 1.16.5 và Docker Compose v5.6.0.
+- Development stack build thành công, 10/10 container healthy với restart count bằng 0 và smoke suite đạt 9/9; stack được dừng sau kiểm tra và giữ nguyên PostgreSQL volume.
+- Bổ sung bước cài dependency theo lockfile cho WebSocket và WebRTC trước khi chạy smoke suite trực tiếp từ host.
+
+## 2026-10-07 - Xác minh production home server trên Ubuntu
+
+- Build và deploy production stack thành công với private environment mới trên Ubuntu; 10/10 container đạt healthy và gateway chỉ bind `127.0.0.1:8080`.
+- Cài và enable `internship-api-platform.service`, sau đó xác minh recovery thành công sau khi reboot vật lý; toàn bộ container giữ restart count bằng 0.
+- Cài `cloudflared` 2026.10.0 từ APT repository chính thức và enable connector service; public DNS/TLS được tạm hoãn cho đến khi chọn hostname thuộc quyền sở hữu hoặc tunnel HTTPS thay thế.
+- Giữ `.env`, `.env.production`, tunnel credential và Docker volumes ngoài Git; không tuyên bố public endpoint sẵn sàng khi DNS chưa được xác minh.
+
+## 2026-10-07 - Chuẩn bị handoff sang Ubuntu 24.04
+
+- Tách nhánh `linux-os` từ checkpoint hiện tại để tiếp tục trên Ubuntu 24.04 mà không thay đổi nhánh `main` dùng cho Windows.
+- Nâng target Terraform EC2 từ Ubuntu 22.04 lên Ubuntu 24.04 LTS và bổ sung assertion cho tag hệ điều hành.
+- Thêm bootstrap và readiness verification cho máy Ubuntu mới, gồm Docker Engine/Compose v2, Node.js 20 và Terraform 1.x.
+- Chuẩn hóa Git line ending thành LF và executable bit cho shell script để clone trên Linux có thể chạy trực tiếp.
+- Chuyển checkpoint bước 12 sang kế hoạch mới: tạo `.env`, PostgreSQL volume, SSH key và Terraform plan mới trên Ubuntu; không chuyển secret/runtime state từ Windows.
+- Xác minh Terraform format/validate và test đạt 7/7, Compose local/production parse thành công, 59/59 test Node.js pass, Bash syntax pass và ShellCheck không có warning; runtime native Ubuntu và 9 test SOAP trên Python 3.11.6 được dành cho bước hậu kiểm sau khi clone.
+
+## 2026-10-07 - Chuẩn bị home-server autostart
+
+- Bổ sung Compose override để build tám application image trực tiếp trên Ubuntu home server, không phụ thuộc EC2 hoặc container registry khi reboot.
+- Thêm production wrapper có host-wide lock, cô lập shell environment, kiểm tra file secret mode `0600` và tách rõ `deploy` khỏi boot-time `up`.
+- Thêm installer tạo production secret/origin theo domain, bảo vệ volume khi mất file secret, build và health-check stack trước khi enable systemd.
+- Cấu hình `internship-api-platform.service` chạy sau Docker/network và tự reconcile production Compose ở mỗi lần boot mà không build lại image.
+- Giữ gateway loopback-only cho Cloudflare Tunnel; public access chỉ được bật sau khi tunnel riêng đã cấu hình và chạy dưới systemd.
+
 ## 2026-09-02 - Bước 1: Khởi tạo nền tảng
 
 - Tạo cấu trúc `platform/` gồm Compose local/production, Nginx gateway, tám thư mục service, tài liệu vận hành/kiến trúc/version/checklist và placeholder cho hạ tầng/CI.
@@ -78,13 +119,13 @@
 - Full regression đạt 68/68; local và production Compose parse thành công; in-container gRPC healthcheck và syntax checks pass.
 - Production Compose được xác minh bằng project/volume mới: migration Prisma chạy từ đầu, 10/10 container healthy, restart count bằng 0, smoke test đạt 9/9, non-root runtime và log rotation đúng cấu hình.
 - Project/volume production test được dọn sau kiểm tra; local stack và PostgreSQL volume hiện có được khôi phục healthy.
-- Tài liệu vận hành được tách rõ khỏi blueprint: blueprint chỉ mô tả thiết kế/roadmap, log này lưu lịch sử thay đổi, còn kết quả kiểm chứng công khai nằm trong `VERIFICATION.md`.
+- Tài liệu vận hành, thiết kế và bằng chứng kiểm chứng được tách riêng để phục vụ đúng mục đích; các hồ sơ vận hành chi tiết được giữ ngoài snapshot công khai.
 
 ## 2026-10-05 - Chuẩn hóa tài liệu dự án
 
 - Xóa nội dung trạng thái triển khai khỏi blueprint để file này chỉ còn thiết kế, checklist và roadmap.
 - Rút gọn lịch sử triển khai thành các thay đổi kỹ thuật và kết quả xác minh, loại bỏ thông tin điều phối không thuộc trạng thái hệ thống.
-- Viết lại `OPERATIONS.md` theo PowerShell, phân nhóm rõ lệnh khởi động và kiểm tra riêng cho từng chức năng từ bước 2 đến bước 10.
+- Chuẩn hóa runbook nội bộ, phân nhóm rõ lệnh khởi động và kiểm tra riêng cho từng chức năng từ bước 2 đến bước 10.
 - Bổ sung hướng dẫn bảo toàn PostgreSQL volume, xử lý lỗi gateway, xem health/restart count và chạy smoke test toàn hệ thống.
 - Chuẩn hóa blueprint về checklist mẫu chưa đánh dấu và loại bỏ `down -v` khỏi nhóm lệnh vận hành hằng ngày.
 
@@ -102,7 +143,7 @@
 ## 2026-10-05 - Chuẩn hóa repository công khai
 
 - Loại file điều phối agent và bằng chứng hậu kiểm chi tiết khỏi snapshot công khai; giữ chúng local bằng `.gitignore`.
-- Thay tài liệu hậu kiểm nội bộ bằng `VERIFICATION.md` chỉ chứa kết quả tổng hợp, không chứa model, router, credential error, username, hostname hoặc đường dẫn máy.
+- Chuẩn hóa bản tổng hợp hậu kiểm công khai để không chứa model, router, lỗi credential, username, hostname hoặc đường dẫn máy.
 - Bổ sung ignore rule cho cloud credentials, Terraform state/variables, private keys, local Compose override và mọi file example/sample/template.
 - Chuẩn bị nhánh public orphan không kế thừa file hoặc commit metadata từ lịch sử phát triển nội bộ.
 - Đổi production gateway sang loopback-only mặc định; mọi public deployment phải terminate TLS phía trước và chỉ redirect HTTP sang HTTPS.
@@ -120,3 +161,17 @@
 - Xác minh production Compose fail-fast khi thiếu secret/origin bắt buộc, render thành công với cấu hình hợp lệ và mặc định chỉ bind gateway tại `127.0.0.1:8080`.
 - Quét toàn bộ lịch sử public bằng Gitleaks 8.24.3, không phát hiện secret; phần xác minh GitHub CI được giữ lại cho bước 13 theo đúng thứ tự roadmap.
 - Làm rõ acceptance criterion của bước 11 là cổng local/repository trước hạ tầng; kiểm tra GitHub CI bắt đầu bắt buộc từ bước 13 và phải ghi `N/A`, không ghi `PASS`, khi workflow chưa tồn tại.
+
+## 2026-10-13 - API Portal: nền tảng, Service Status và Authentication/JWT
+
+- Thêm portal tĩnh buildless bằng semantic HTML, CSS responsive và JavaScript ES modules; không dùng framework, bundler, CDN hoặc external font.
+- Mount static assets read-only vào gateway ở cả development và production Compose; Nginx phục vụ `/` và `/assets/*` với MIME map chuẩn, `nosniff` và CSP same-origin chỉ áp dụng cho portal.
+- Thêm API client dùng chung với timeout, parse JSON/text và chuẩn hóa lỗi mà không ghi request data hoặc token ra console.
+- Thêm Service Status dashboard kiểm tra tám public route bằng `Promise.allSettled()`, mô tả gRPC là internal-only, suy ra PostgreSQL qua User health, hỗ trợ refresh và dừng polling khi tab ẩn.
+- Thêm Register, Login và JWT Verify; token chỉ giữ trong memory, bị che mặc định, có copy/clear và response được render bằng `textContent`.
+- Thêm User CRUD với PostgreSQL, validation và xác nhận xóa; thêm GraphQL Explorer cho list/user query và SOAP `NumberToWords` với XML request/response dạng escaped text.
+- Thêm webhook documentation không xử lý secret trong browser, CTA tới Chat/WebRTC hiện có, sơ đồ gRPC nội bộ, endpoint catalog và curl placeholder cho Cloudflare Access.
+- Bổ sung security headers chỉ tại exact route `/`, POST fallback an toàn cho auth form và test tự động 8/8 cho file/reference, navigation, DOM sink, runtime-secret leakage, JWT storage, Nginx header scope và Compose mounts.
+- Full regression đạt 68/68 service test; development và production-origin smoke đều đạt 9/9 với 10/10 container healthy.
+- Deploy portal bằng production wrapper, giữ gateway loopback-only; xác minh `/`, CSS, ES modules, Chat và WebRTC tại origin, đồng thời Cloudflare Access vẫn trả 302 cho mọi public request chưa xác thực.
+- Post-deploy autostart verification xác nhận systemd/home-server runtime, đủ mười service healthy, loopback gateway và public Access edge vẫn hoạt động.

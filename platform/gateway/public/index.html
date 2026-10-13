@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Portal tương tác cho Internship API Platform.">
+    <title>Internship API Platform</title>
+    <link rel="stylesheet" href="/assets/app.css">
+    <script type="module" src="/assets/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+
+    <header class="site-header">
+      <a class="brand" href="#overview" aria-label="Internship API Platform — về đầu trang">
+        <span class="brand-mark" aria-hidden="true">IP</span>
+        <span>
+          <strong>Internship API</strong>
+          <small>Platform Portal</small>
+        </span>
+      </a>
+      <nav aria-label="Điều hướng chính">
+        <a href="#overview">Tổng quan</a>
+        <a href="#status">Trạng thái</a>
+        <a href="#authentication">Authentication</a>
+        <a href="#users">API Lab</a>
+        <a href="#graphql">GraphQL</a>
+        <a href="#soap-demo">SOAP</a>
+        <a href="#webhook-docs">Webhook</a>
+        <a href="#realtime">Realtime</a>
+        <a href="#grpc">gRPC</a>
+        <a href="#endpoints">Catalog</a>
+      </nav>
+      <span class="environment"><span aria-hidden="true"></span> Same-origin demo</span>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" id="overview" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Seven protocols. One gateway.</p>
+          <h1 id="hero-title">Khám phá một hệ API<br><em>đang thực sự vận hành.</em></h1>
+          <p class="hero-lead">
+            Portal tương tác cho kiến trúc microservice chạy trên Ubuntu home server,
+            được kết nối qua Nginx và bảo vệ bởi Cloudflare Access.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#authentication">Thử JWT</a>
+            <a class="button button-secondary" href="#status">Kiểm tra hệ thống</a>
+          </div>
+        </div>
+        <div class="system-map" aria-label="Luồng kiến trúc từ trình duyệt đến các service">
+          <div class="map-node map-browser">
+            <span>01</span>
+            <strong>Browser</strong>
+            <small>Cloudflare Access</small>
+          </div>
+          <div class="map-line" aria-hidden="true"></div>
+          <div class="map-node map-gateway">
+            <span>02</span>
+            <strong>Nginx Gateway</strong>
+            <small>Same-origin routing</small>
+          </div>
+          <div class="map-line" aria-hidden="true"></div>
+          <div class="protocol-grid" aria-label="Các giao thức được hỗ trợ">
+            <span>REST</span><span>GraphQL</span><span>gRPC</span><span>WebSocket</span>
+            <span>Webhook</span><span>SOAP</span><span>WebRTC</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Thông tin nền tảng">
+        <article><strong>10</strong><span>Containers</span></article>
+        <article><strong>7</strong><span>API styles</span></article>
+        <article><strong>1</strong><span>Public gateway</span></article>
+        <article><strong>24.04</strong><span>Ubuntu LTS</span></article>
+      </section>
+
+      <section class="section" id="status" aria-labelledby="status-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Live topology</p>
+            <h2 id="status-title">Service Status</h2>
+            <p>Kiểm tra từng public route mà không để một service lỗi ảnh hưởng toàn dashboard.</p>
+          </div>
+          <button class="button button-secondary refresh-button" id="refresh-status" type="button">
+            <span aria-hidden="true">↻</span> Refresh
+          </button>
+        </div>
+
+        <div class="status-summary" aria-live="polite">
+          <span class="pulse" aria-hidden="true"></span>
+          <strong id="status-summary">Đang kiểm tra hệ thống…</strong>
+          <span id="status-updated"></span>
+        </div>
+        <div class="service-grid" id="service-grid"></div>
+        <p class="section-note">gRPC và PostgreSQL không mở cổng public; trạng thái được mô tả qua các service phụ thuộc.</p>
+      </section>
+
+      <section class="section auth-section" id="authentication" aria-labelledby="auth-title">
+        <div class="section-heading auth-heading">
+          <div>
+            <p class="eyebrow">Authentication lab</p>
+            <h2 id="auth-title">JWT, nhìn thấy toàn bộ vòng đời.</h2>
+            <p>Đăng ký hoặc đăng nhập để phát hành token, sau đó xác minh token ngay trên cùng origin.</p>
+          </div>
+          <div class="auth-flow" aria-label="Quy trình xác thực">
+            <span>Credentials</span><i aria-hidden="true">→</i><span>JWT</span><i aria-hidden="true">→</i><span>Verify</span>
+          </div>
+        </div>
+
+        <div class="auth-layout">
+          <div class="auth-forms">
+            <div class="tabs" role="tablist" aria-label="Chọn thao tác authentication">
+              <button id="register-tab" role="tab" aria-selected="true" aria-controls="register-panel" type="button">Register</button>
+              <button id="login-tab" role="tab" aria-selected="false" aria-controls="login-panel" type="button" tabindex="-1">Login</button>
+            </div>
+
+            <div id="register-panel" role="tabpanel" aria-labelledby="register-tab">
+              <form id="register-form" class="auth-form" method="post" action="/api/auth/register">
+                <label for="register-name">Tên hiển thị <span>Tùy chọn</span></label>
+                <input id="register-name" name="name" autocomplete="name" maxlength="120" placeholder="API Explorer">
+
+                <label for="register-email">Email</label>
+                <input id="register-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+
+                <label for="register-password">Mật khẩu <span>Tối thiểu 8 ký tự</span></label>
+                <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="••••••••">
+
+                <button class="button button-primary submit-button" type="submit">Tạo tài khoản &amp; JWT</button>
+              </form>
+            </div>
+
+            <div id="login-panel" role="tabpanel" aria-labelledby="login-tab" hidden>
+              <form id="login-form" class="auth-form" method="post" action="/api/auth/login">
+                <label for="login-email">Email</label>
+                <input id="login-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+
+                <label for="login-password">Mật khẩu</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••">
+
+                <button class="button button-primary submit-button" type="submit">Đăng nhập &amp; lấy JWT</button>
+              </form>
+            </div>
+
+            <p class="privacy-note">
+              <span aria-hidden="true">◉</span>
+              Tài khoản demo chỉ lưu trong memory và có thể mất khi container restart.
+            </p>
+          </div>
+
+          <div class="token-console">
+            <div class="console-header">
+              <div>
+                <span class="console-dot"></span><span class="console-dot"></span><span class="console-dot"></span>
+              </div>
+              <span>JWT SESSION · MEMORY ONLY</span>
+            </div>
+            <div class="console-body">
+              <div class="token-empty" id="token-empty">
+                <span aria-hidden="true">{ }</span>
+                <strong>Chưa có token</strong>
+                <p>Register hoặc login để bắt đầu phiên demo.</p>
+              </div>
+              <div id="token-result" hidden>
+                <div class="token-meta">
+                  <span class="status-badge healthy">Issued</span>
+                  <span id="token-expiry"></span>
+                </div>
+                <p class="token-label">Bearer token</p>
+                <pre class="token-value" id="token-value" tabindex="0"></pre>
+                <div class="token-actions">
+                  <button class="button button-compact" id="toggle-token" type="button" aria-pressed="false">Hiện token</button>
+                  <button class="button button-compact" id="copy-token" type="button">Copy</button>
+                  <button class="button button-compact danger" id="clear-token" type="button">Clear</button>
+                </div>
+                <button class="button button-verify" id="verify-token" type="button">Verify JWT <span aria-hidden="true">→</span></button>
+              </div>
+              <div class="api-response" id="auth-response" aria-live="polite" hidden>
+                <div><span>API response</span><span id="auth-response-status"></span></div>
+                <pre id="auth-response-body" tabindex="0"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="access-note">
+          <strong>Hai lớp xác thực, hai mục đích khác nhau.</strong>
+          <p>JWT ở đây thuộc auth-service của ứng dụng demo. Nó không phải và không thay thế phiên đăng nhập Cloudflare Access đang bảo vệ hostname.</p>
+        </aside>
+      </section>
+
+      <section class="section" id="users" aria-labelledby="users-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Persistent REST data</p>
+            <h2 id="users-title">User CRUD</h2>
+            <p>Tạo, đọc, cập nhật và xóa dữ liệu demo được lưu trong PostgreSQL thật của home server.</p>
+          </div>
+          <button class="button button-secondary" id="refresh-users" type="button">↻ Refresh users</button>
+        </div>
+
+        <aside class="data-warning">
+          <strong>Dữ liệu persistent</strong>
+          <span>Chỉ nhập dữ liệu demo. User service hiện không kiểm tra JWT; Cloudflare Access là lớp bảo vệ bên ngoài.</span>
+        </aside>
+        <p class="request-notice" id="users-notice" data-state="neutral" aria-live="polite">Đang tải danh sách…</p>
+
+        <div class="crud-layout">
+          <div class="crud-column">
+            <div class="panel-title"><span>Users</span><code>GET /api/users</code></div>
+            <div class="user-list" id="user-list"></div>
+          </div>
+
+          <div class="crud-column form-column">
+            <div class="panel-title"><span>Create</span><code>POST /api/users</code></div>
+            <form class="stack-form" id="create-user-form">
+              <label for="create-user-email">Email</label>
+              <input id="create-user-email" name="email" type="email" required placeholder="demo@example.com">
+              <label for="create-user-name">Tên <span>1–120 ký tự</span></label>
+              <input id="create-user-name" name="name" required maxlength="120" placeholder="Demo User">
+              <button class="button button-primary" type="submit">Tạo user</button>
+            </form>
+          </div>
+
+          <div class="crud-column form-column editor-column">
+            <div class="panel-title"><span>Edit</span><code id="edit-user-id">Chưa chọn</code></div>
+            <div class="editor-empty" id="user-editor-empty">Chọn một user trong danh sách để xem và chỉnh sửa.</div>
+            <form class="stack-form" id="edit-user-form" hidden>
+              <label for="edit-user-email">Email</label>
+              <input id="edit-user-email" name="email" type="email" required>
+              <label for="edit-user-name">Tên <span>1–120 ký tự</span></label>
+              <input id="edit-user-name" name="name" required maxlength="120">
+              <div class="form-actions">
+                <button class="button button-primary" type="submit">Lưu thay đổi</button>
+                <button class="button danger" id="delete-user" type="button">Xóa user</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="graphql" aria-labelledby="graphql-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Unified query layer</p>
+            <h2 id="graphql-title">GraphQL Explorer</h2>
+            <p>Query danh sách qua REST hoặc một user qua chuỗi GraphQL → gRPC → REST.</p>
+          </div>
+          <div class="example-actions">
+            <button class="button button-compact" id="graphql-list-query" type="button">List query</button>
+            <button class="button button-compact" id="graphql-user-query" type="button">User by ID</button>
+          </div>
+        </div>
+
+        <div class="explorer-shell">
+          <div class="editor-pane">
+            <div class="panel-title"><label for="graphql-query">Query</label><code>POST /graphql</code></div>
+            <textarea id="graphql-query" spellcheck="false" aria-label="GraphQL query"></textarea>
+            <div class="panel-title variables-title"><label for="graphql-variables">Variables</label><code>JSON object</code></div>
+            <textarea id="graphql-variables" class="variables-editor" spellcheck="false">{}</textarea>
+            <div class="editor-actions">
+              <button class="button button-primary" id="graphql-run" type="button">Execute</button>
+              <button class="button" id="graphql-format" type="button">Format</button>
+              <button class="button" id="graphql-clear" type="button">Clear</button>
+            </div>
+          </div>
+          <div class="response-pane" id="graphql-response" aria-live="polite">
+            <div class="panel-title"><span>Response</span><code id="graphql-meta">READY</code></div>
+            <pre id="graphql-body" tabindex="0">{
+  "message": "Execute a query to inspect the response."
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="soap-demo" aria-labelledby="soap-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Legacy interoperability</p>
+            <h2 id="soap-title">SOAP Demo</h2>
+            <p>Gửi XML envelope tới operation <code>NumberToWords</code> mà không render XML vào DOM.</p>
+          </div>
+          <a class="button button-secondary" href="/soap?wsdl" target="_blank" rel="noopener">Open WSDL ↗</a>
+        </div>
+
+        <form class="soap-control" id="soap-form">
+          <label for="soap-number">Số nguyên</label>
+          <input id="soap-number" type="number" value="12045" min="-999999999" max="999999999" step="1" required>
+          <button class="button button-primary" type="submit">Convert to words</button>
+        </form>
+        <div class="xml-grid">
+          <div class="code-panel">
+            <div class="panel-title"><span>XML request</span><button class="text-button" type="button" data-copy-target="#soap-request">Copy</button></div>
+            <pre id="soap-request" tabindex="0"></pre>
+          </div>
+          <div class="code-panel" id="soap-response" aria-live="polite">
+            <div class="panel-title"><span>XML response</span><code id="soap-meta">READY</code></div>
+            <pre id="soap-body" tabindex="0">Send a request to see the SOAP response.</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="webhook-docs" aria-labelledby="webhook-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Operator-only signing</p>
+            <h2 id="webhook-title">Signed Webhook</h2>
+            <p>Browser chỉ hiển thị contract. Việc ký request thật phải diễn ra trong terminal hoặc operator tooling an toàn.</p>
+          </div>
+          <span class="docs-only-badge">Documentation only</span>
+        </div>
+        <div class="webhook-grid">
+          <div class="webhook-contract">
+            <div><code>POST</code><strong>/webhook</strong></div>
+            <dl>
+              <div><dt>Content type</dt><dd><code>Content-Type: application/json</code></dd></div>
+              <div><dt>Event ID</dt><dd><code>X-Webhook-Id</code> hoặc <code>X-GitHub-Delivery</code></dd></div>
+              <div><dt>Signature</dt><dd><code>X-Webhook-Signature</code> hoặc <code>X-Hub-Signature-256</code></dd></div>
+              <div><dt>Formula</dt><dd><code>sha256=HMAC_SHA256(WEBHOOK_SECRET, raw_request_body)</code></dd></div>
+              <div><dt>Responses</dt><dd><code>202</code> accepted · <code>200</code> duplicate · <code>401</code> invalid · <code>503</code> retry</dd></div>
+            </dl>
+          </div>
+          <div class="code-panel">
+            <div class="panel-title"><span>Safe placeholder</span><span>application/json</span></div>
+            <pre tabindex="0">{
+  "event": "deployment",
+  "status": "success"
+}
+
+X-Webhook-Id: demo-event-001
+X-Webhook-Signature: sha256=&lt;SIGNATURE_FROM_SECURE_TOOLING&gt;</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="realtime" aria-labelledby="realtime-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Live connections</p>
+            <h2 id="realtime-title">Chat &amp; WebRTC</h2>
+            <p>Mở các demo realtime hiện có trong cùng origin và cùng phiên Cloudflare Access.</p>
+          </div>
+        </div>
+        <div class="realtime-grid">
+          <article class="realtime-card chat-card">
+            <span class="card-index">01 · Socket.IO</span>
+            <h3>Realtime Chat</h3>
+            <p>Chat nhiều client với presence, bounded history, broadcast và reconnect tự động.</p>
+            <a class="button button-primary" href="/ws/">Open Realtime Chat →</a>
+          </article>
+          <article class="realtime-card call-card">
+            <span class="card-index">02 · Peer-to-peer</span>
+            <h3>WebRTC Call</h3>
+            <p>Mở hai tab hoặc thiết bị, cấp quyền camera/microphone và nhập cùng một room ID.</p>
+            <a class="button button-primary" href="/webrtc/">Open WebRTC Call →</a>
+            <small>STUN công khai có thể không vượt qua NAT hạn chế; TURN chưa nằm trong phạm vi demo.</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="section grpc-section" id="grpc" aria-labelledby="grpc-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Private network path</p>
+            <h2 id="grpc-title">gRPC nội bộ</h2>
+            <p>Browser không gọi raw gRPC. Query <code>user(id)</code> ở GraphQL Explorer xác minh luồng này gián tiếp.</p>
+          </div>
+        </div>
+        <div class="grpc-flow" aria-label="Luồng GraphQL qua gRPC tới PostgreSQL">
+          <div><span>01</span><strong>GraphQL</strong><small>Public query</small></div>
+          <i aria-hidden="true">user(id)<br>gRPC lookup →</i>
+          <div><span>02</span><strong>gRPC service</strong><small>Docker network only</small></div>
+          <i aria-hidden="true">→ REST</i>
+          <div><span>03</span><strong>User service</strong><small>Prisma</small></div>
+          <i aria-hidden="true">→ SQL</i>
+          <div><span>04</span><strong>PostgreSQL</strong><small>Persistent volume</small></div>
+        </div>
+      </section>
+
+      <section class="section catalog-section" id="endpoints" aria-labelledby="endpoints-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Quick reference</p>
+            <h2 id="endpoints-title">Endpoint Catalog</h2>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">Method</th><th scope="col">Path</th><th scope="col">Service</th><th scope="col">Mục đích</th></tr></thead>
+            <tbody>
+              <tr><td>GET</td><td><code>/health</code></td><td>Gateway</td><td>Health</td></tr>
+              <tr><td>POST</td><td><code>/api/auth/register</code></td><td>Auth</td><td>Đăng ký</td></tr>
+              <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Auth</td><td>Đăng nhập</td></tr>
+              <tr><td>GET</td><td><code>/api/auth/verify</code></td><td>Auth</td><td>Kiểm tra JWT</td></tr>
+              <tr><td>GET / POST</td><td><code>/api/users</code></td><td>User</td><td>List / Create</td></tr>
+              <tr><td>GET / PUT / DELETE</td><td><code>/api/users/:id</code></td><td>User</td><td>Read / Update / Delete</td></tr>
+              <tr><td>POST</td><td><code>/graphql</code></td><td>GraphQL</td><td>Query</td></tr>
+              <tr><td>WS</td><td><code>/ws/socket.io</code></td><td>WebSocket</td><td>Chat</td></tr>
+              <tr><td>POST</td><td><code>/webhook</code></td><td>Webhook</td><td>Signed event</td></tr>
+              <tr><td>GET</td><td><code>/soap?wsdl</code></td><td>SOAP</td><td>WSDL</td></tr>
+              <tr><td>POST</td><td><code>/soap</code></td><td>SOAP</td><td>NumberToWords</td></tr>
+              <tr><td>WS</td><td><code>/webrtc/signal</code></td><td>WebRTC</td><td>Signaling</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code-panel curl-example">
+          <div class="panel-title"><span>Public curl via Cloudflare Access</span><button class="text-button" type="button" data-copy-target="#curl-example">Copy</button></div>
+          <pre id="curl-example" tabindex="0">curl \
+  -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
+  -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
+  https://api.jcb-services.me/health</pre>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Internship API Platform</span>
+      <span>Static portal · no external dependencies</span>
+    </footer>
+  </body>
+</html>

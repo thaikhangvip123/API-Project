@@ -1,10 +1,12 @@
 # Version Matrix
 
-Last updated: 2026-10-05
+Last updated: 2026-10-07
 
 | Component | Version pin | Where declared | Notes |
 |---|---:|---|---|
-| Node.js base image | `node:20.11-alpine` | Implemented Node service Dockerfiles | Required by blueprint |
+| Ubuntu host | `24.04 LTS` | Ubuntu bootstrap/autostart scripts; Terraform AMI reference | Native home-server target on `linux-os`; EC2 is optional |
+| Ubuntu host Node.js | `22.x` (minimum `22.11.0`) | Ubuntu bootstrap/readiness scripts | Host tooling and smoke tests; independent from container runtime |
+| Node.js base image | `node:20.11-alpine` | Implemented Node service Dockerfiles | Shared container runtime baseline |
 | Python base image | `python:3.11.6-slim` | `soap-service/Dockerfile` | Matches the verified local Python 3.11.6 runtime |
 | Nginx | `nginx:1.27-alpine` | `docker-compose.yml`, `docker-compose.prod.yml` | Gateway image |
 | PostgreSQL | `postgres:16.4-alpine` | `docker-compose.yml`, `docker-compose.prod.yml` | Local/prod database container |

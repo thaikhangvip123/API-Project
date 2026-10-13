@@ -1,0 +1,40 @@
+services:
+  auth-service:
+    build:
+      context: ./services/auth-service
+    image: internship-home/auth-service:current
+
+  user-service:
+    build:
+      context: ./services/user-service
+    image: internship-home/user-service:current
+
+  graphql-service:
+    build:
+      context: ./services/graphql-service
+    image: internship-home/graphql-service:current
+
+  grpc-service:
+    build:
+      context: ./services/grpc-service
+    image: internship-home/grpc-service:current
+
+  websocket-service:
+    build:
+      context: ./services/websocket-service
+    image: internship-home/websocket-service:current
+
+  webhook-service:
+    build:
+      context: ./services/webhook-service
+    image: internship-home/webhook-service:current
+
+  soap-service:
+    build:
+      context: ./services/soap-service
+    image: internship-home/soap-service:current
+
+  webrtc-signaling:
+    build:
+      context: ./services/webrtc-signaling
+    image: internship-home/webrtc-signaling:current
