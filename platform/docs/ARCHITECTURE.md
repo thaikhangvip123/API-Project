@@ -10,6 +10,7 @@ All external traffic enters through the Nginx gateway. Internal services communi
 
 | Public path | Service | API type |
 |---|---|---|
+| `/`, `/assets/*` | `gateway` | Static API portal |
 | `/api/auth/*` | `auth-service` | REST + JWT |
 | `/api/users/*` | `user-service` | REST CRUD |
 | `/graphql` | `graphql-service` | GraphQL |
@@ -47,6 +48,7 @@ All external traffic enters through the Nginx gateway. Internal services communi
 ```text
 Client
   -> Nginx gateway
+     -> /              -> static API portal (status, Auth/JWT, API demos, realtime links)
      -> /api/auth/*  -> auth-service (in-memory auth demo)
      -> /api/users/* -> user-service -> PostgreSQL
      -> /graphql     -> graphql-service

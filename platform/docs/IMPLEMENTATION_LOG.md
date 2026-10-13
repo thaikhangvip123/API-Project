@@ -161,3 +161,17 @@
 - Xác minh production Compose fail-fast khi thiếu secret/origin bắt buộc, render thành công với cấu hình hợp lệ và mặc định chỉ bind gateway tại `127.0.0.1:8080`.
 - Quét toàn bộ lịch sử public bằng Gitleaks 8.24.3, không phát hiện secret; phần xác minh GitHub CI được giữ lại cho bước 13 theo đúng thứ tự roadmap.
 - Làm rõ acceptance criterion của bước 11 là cổng local/repository trước hạ tầng; kiểm tra GitHub CI bắt đầu bắt buộc từ bước 13 và phải ghi `N/A`, không ghi `PASS`, khi workflow chưa tồn tại.
+
+## 2026-10-13 - API Portal: nền tảng, Service Status và Authentication/JWT
+
+- Thêm portal tĩnh buildless bằng semantic HTML, CSS responsive và JavaScript ES modules; không dùng framework, bundler, CDN hoặc external font.
+- Mount static assets read-only vào gateway ở cả development và production Compose; Nginx phục vụ `/` và `/assets/*` với MIME map chuẩn, `nosniff` và CSP same-origin chỉ áp dụng cho portal.
+- Thêm API client dùng chung với timeout, parse JSON/text và chuẩn hóa lỗi mà không ghi request data hoặc token ra console.
+- Thêm Service Status dashboard kiểm tra tám public route bằng `Promise.allSettled()`, mô tả gRPC là internal-only, suy ra PostgreSQL qua User health, hỗ trợ refresh và dừng polling khi tab ẩn.
+- Thêm Register, Login và JWT Verify; token chỉ giữ trong memory, bị che mặc định, có copy/clear và response được render bằng `textContent`.
+- Thêm User CRUD với PostgreSQL, validation và xác nhận xóa; thêm GraphQL Explorer cho list/user query và SOAP `NumberToWords` với XML request/response dạng escaped text.
+- Thêm webhook documentation không xử lý secret trong browser, CTA tới Chat/WebRTC hiện có, sơ đồ gRPC nội bộ, endpoint catalog và curl placeholder cho Cloudflare Access.
+- Bổ sung security headers chỉ tại exact route `/`, POST fallback an toàn cho auth form và test tự động 8/8 cho file/reference, navigation, DOM sink, runtime-secret leakage, JWT storage, Nginx header scope và Compose mounts.
+- Full regression đạt 68/68 service test; development và production-origin smoke đều đạt 9/9 với 10/10 container healthy.
+- Deploy portal bằng production wrapper, giữ gateway loopback-only; xác minh `/`, CSS, ES modules, Chat và WebRTC tại origin, đồng thời Cloudflare Access vẫn trả 302 cho mọi public request chưa xác thực.
+- Post-deploy autostart verification xác nhận systemd/home-server runtime, đủ mười service healthy, loopback gateway và public Access edge vẫn hoạt động.

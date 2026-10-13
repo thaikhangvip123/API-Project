@@ -73,7 +73,7 @@ Gateway chỉ bind vào loopback `127.0.0.1:8080`. Cloudflare Tunnel tạo kênh
 
 | Service | Loại giao tiếp | Public route | Trách nhiệm |
 |---|---|---|---|
-| `gateway` | HTTP reverse proxy | `/health` và toàn bộ proxied public route | Entry point, routing và WebSocket upgrade |
+| `gateway` | HTTP + static portal | `/`, `/assets/*`, `/health` và toàn bộ proxied public route | Portal, entry point, routing và WebSocket upgrade |
 | `auth-service` | REST + JWT | `/api/auth/*` | Đăng ký, đăng nhập, phát hành và xác minh JWT |
 | `user-service` | REST CRUD | `/api/users`, `/api/users/:id` | Quản lý user và truy cập PostgreSQL qua Prisma |
 | `graphql-service` | GraphQL | `/graphql` | Cung cấp query hợp nhất trên REST và gRPC |
@@ -83,6 +83,27 @@ Gateway chỉ bind vào loopback `127.0.0.1:8080`. Cloudflare Tunnel tạo kênh
 | `soap-service` | SOAP/WSDL | `/soap`, `/soap?wsdl` | Chuyển số nguyên thành chữ tiếng Anh |
 | `webrtc-signaling` | WebSocket signaling | `/webrtc/*` | Room hai peer và trao đổi offer/answer/ICE |
 | `postgres` | PostgreSQL | Internal only | Lưu trữ dữ liệu user persistent |
+
+## API Portal
+
+Nginx phục vụ một portal tĩnh tại `/` bằng HTML, CSS và JavaScript thuần, không dùng CDN hoặc frontend framework. Portal cung cấp:
+
+- Dashboard trạng thái service với refresh và polling có kiểm soát.
+- Register, login và verify JWT; token chỉ tồn tại trong memory của tab browser.
+- User CRUD trên PostgreSQL với validation và xác nhận trước khi xóa.
+- GraphQL Explorer, SOAP `NumberToWords` và tài liệu signed webhook an toàn.
+- Liên kết tới Chat và WebRTC, mô tả gRPC nội bộ và endpoint catalog.
+
+Preview bằng development stack:
+
+```bash
+cd platform
+bash start.sh
+```
+
+Sau đó mở `http://localhost/`. Dừng preview bằng `bash start.sh --stop` để không để development stack chạy song song khi quay lại vận hành production.
+
+Portal và API cùng origin. Cloudflare Access tiếp tục bảo vệ toàn bộ hostname public; JWT demo không thay thế phiên Cloudflare Access.
 
 ### Auth REST
 
