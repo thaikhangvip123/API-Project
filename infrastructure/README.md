@@ -1,6 +1,6 @@
-# EC2 Infrastructure (Roadmap Step 12)
+# Optional EC2 Infrastructure Reference
 
-This directory provisions the Ubuntu host required by roadmap step 12. It does not deploy application images, configure GitHub Actions, or expose the loopback-bound production gateway; those remain steps 13-15.
+This directory contains an optional Terraform exercise for provisioning an Ubuntu host on AWS. It does not deploy application images, configure GitHub Actions, or expose the loopback-bound production gateway.
 
 On the `linux-os` branch, the active deployment target is the physical Ubuntu 24.04 home server documented at the repository root. This AWS module is retained for Terraform practice and as an optional reference deployment; do not run `terraform apply` for the self-hosted path.
 
@@ -49,11 +49,11 @@ The verification requires the matching private key to be available to SSH (for e
 
 The Elastic IP and running EC2 instance incur AWS charges. Use `terraform destroy` only when decommissioning is intentional and state is available; destroying the host is not part of the normal deployment workflow.
 
-At the Singapore on-demand rates checked during step 12, the always-on baseline is approximately USD 24.84/month before data transfer (t3.small compute, 20 GiB gp3, and one in-use public IPv4). Stopping EC2 pauses compute charges, but the volume and public IPv4 continue to incur charges until released or destroyed.
+At the Singapore on-demand rates recorded during the earlier AWS exercise, the always-on baseline was approximately USD 24.84/month before data transfer (t3.small compute, 20 GiB gp3, and one in-use public IPv4). Recheck current pricing before use. Stopping EC2 pauses compute charges, but the volume and public IPv4 continue to incur charges until released or destroyed.
 
-## Resume checkpoint
+## Optional exercise checkpoint
 
-Step 12 is intentionally paused before resource creation. No Terraform apply has run, no project-tagged EC2 instance or Elastic IP exists, and there is no Terraform state to migrate from Windows. The old saved plan is not a handoff artifact; create a fresh plan on Ubuntu 24.04 with the new SSH key and current public IP.
+No Terraform apply has run, no project-tagged EC2 instance or Elastic IP exists, and there is no Terraform state to migrate from Windows. If this optional exercise is resumed, create a fresh plan on Ubuntu 24.04 with a new SSH key and the current public IP.
 
 - Git branch: `linux-os`
 - AWS region: `ap-southeast-1`
@@ -61,7 +61,7 @@ Step 12 is intentionally paused before resource creation. No Terraform apply has
 - Suggested private key: `~/.ssh/internship-ec2-ubuntu24` (never uploaded or committed)
 - Runtime variables: export them in the current shell or keep them in a private mode-`0600` tfvars file outside Git
 
-Before resuming, verify AWS authentication and the current operator public IP, initialize this checkout, and create a new reviewed plan. Expect `5 add, 0 change, 0 destroy` while step 12 still has no state:
+Before running the optional exercise, verify AWS authentication and the current operator public IP, initialize this checkout, and create a new reviewed plan. Expect `5 add, 0 change, 0 destroy` while the module has no state:
 
 ```bash
 cd infrastructure/terraform

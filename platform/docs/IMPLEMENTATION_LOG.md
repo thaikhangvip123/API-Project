@@ -2,6 +2,14 @@
 
 > Chỉ ghi thay đổi kỹ thuật, cấu hình, phiên bản và kết quả xác minh của hệ thống. Không ghi danh tính bên thực hiện, công cụ nội bộ hoặc quá trình điều phối.
 
+## 2026-10-13 - Kích hoạt public HTTPS qua Cloudflare Tunnel
+
+- Cấu hình Cloudflare DNS cho `jcb-services.me` và published application `api.jcb-services.me` trỏ về gateway loopback `http://localhost:8080` qua tunnel hiện có.
+- Đồng bộ `PUBLIC_HOSTNAME`, Socket.IO CORS origin và WebRTC signaling origin với `https://api.jcb-services.me`, sau đó recreate production stack mà không thay đổi PostgreSQL volume hoặc secret.
+- Xác minh `cloudflared` và `internship-api-platform.service` đều enabled/active, 10/10 service healthy, local gateway trả health thành công và public HTTPS verification pass.
+- Chạy public cross-protocol smoke suite qua tunnel đạt 9/9 cho REST/JWT, PostgreSQL CRUD, GraphQL/gRPC, Socket.IO, webhook, SOAP và WebRTC signaling.
+- Bật Cloudflare Access cho toàn bộ hostname; request không có phiên đăng nhập tới `/health`, `/api/users` và `/graphql` đều nhận HTTP 302 tới trang Access, không đi thẳng vào application.
+
 ## 2026-10-07 - Đồng bộ Node.js host trên Ubuntu
 
 - Chuyển NodeSource bootstrap của Ubuntu từ dòng 20.x sang 22.x và yêu cầu tối thiểu Node.js 22.11.0 trong readiness gate.
@@ -111,13 +119,13 @@
 - Full regression đạt 68/68; local và production Compose parse thành công; in-container gRPC healthcheck và syntax checks pass.
 - Production Compose được xác minh bằng project/volume mới: migration Prisma chạy từ đầu, 10/10 container healthy, restart count bằng 0, smoke test đạt 9/9, non-root runtime và log rotation đúng cấu hình.
 - Project/volume production test được dọn sau kiểm tra; local stack và PostgreSQL volume hiện có được khôi phục healthy.
-- Tài liệu vận hành được tách rõ khỏi blueprint: blueprint chỉ mô tả thiết kế/roadmap, log này lưu lịch sử thay đổi, còn kết quả kiểm chứng công khai nằm trong `VERIFICATION.md`.
+- Tài liệu vận hành, thiết kế và bằng chứng kiểm chứng được tách riêng để phục vụ đúng mục đích; các hồ sơ vận hành chi tiết được giữ ngoài snapshot công khai.
 
 ## 2026-10-05 - Chuẩn hóa tài liệu dự án
 
 - Xóa nội dung trạng thái triển khai khỏi blueprint để file này chỉ còn thiết kế, checklist và roadmap.
 - Rút gọn lịch sử triển khai thành các thay đổi kỹ thuật và kết quả xác minh, loại bỏ thông tin điều phối không thuộc trạng thái hệ thống.
-- Viết lại `OPERATIONS.md` theo PowerShell, phân nhóm rõ lệnh khởi động và kiểm tra riêng cho từng chức năng từ bước 2 đến bước 10.
+- Chuẩn hóa runbook nội bộ, phân nhóm rõ lệnh khởi động và kiểm tra riêng cho từng chức năng từ bước 2 đến bước 10.
 - Bổ sung hướng dẫn bảo toàn PostgreSQL volume, xử lý lỗi gateway, xem health/restart count và chạy smoke test toàn hệ thống.
 - Chuẩn hóa blueprint về checklist mẫu chưa đánh dấu và loại bỏ `down -v` khỏi nhóm lệnh vận hành hằng ngày.
 
@@ -135,7 +143,7 @@
 ## 2026-10-05 - Chuẩn hóa repository công khai
 
 - Loại file điều phối agent và bằng chứng hậu kiểm chi tiết khỏi snapshot công khai; giữ chúng local bằng `.gitignore`.
-- Thay tài liệu hậu kiểm nội bộ bằng `VERIFICATION.md` chỉ chứa kết quả tổng hợp, không chứa model, router, credential error, username, hostname hoặc đường dẫn máy.
+- Chuẩn hóa bản tổng hợp hậu kiểm công khai để không chứa model, router, lỗi credential, username, hostname hoặc đường dẫn máy.
 - Bổ sung ignore rule cho cloud credentials, Terraform state/variables, private keys, local Compose override và mọi file example/sample/template.
 - Chuẩn bị nhánh public orphan không kế thừa file hoặc commit metadata từ lịch sử phát triển nội bộ.
 - Đổi production gateway sang loopback-only mặc định; mọi public deployment phải terminate TLS phía trước và chỉ redirect HTTP sang HTTPS.

@@ -65,7 +65,7 @@ For local development, browsers treat `http://localhost` as a secure context. A 
 
 ## Current Roadmap Status
 
-- Step 1 complete: folder structure, gateway routing design, compose skeleton, version matrix, and operation/checklist docs.
+- Step 1 complete: folder structure, gateway routing design, Compose skeleton, and version matrix.
 - Step 2 implemented: `auth-service` REST + JWT code, tests, Dockerfile, README, and Compose healthcheck are in place.
 - Step 2 Docker runtime verification complete: standalone image/container and Compose gateway flow pass.
 - Step 3 implemented: `user-service` REST CRUD uses PostgreSQL through Prisma, with an initial migration, tests, Dockerfile, README, and Compose healthcheck.
@@ -77,5 +77,8 @@ For local development, browsers treat `http://localhost` as a secure context. A 
 - Step 8 complete: `soap-service` publishes a WSDL and a bounded integer-to-English-words SOAP operation on Python 3.11.6 with exact dependency pins; its Docker image, healthcheck, WSDL, and SOAP request path pass through the Nginx gateway.
 - Step 9 signaling complete: `webrtc-signaling` provides a two-person browser room, bounded/validated offer-answer-ICE relay, heartbeat cleanup, Google STUN configuration, production origin guards, a responsive video-call client, Docker healthcheck, and gateway runtime verification. Final camera/microphone media confirmation requires user permission in two browser tabs.
 - Step 10 complete: all ten containers build and start together, only Nginx publishes a host port, all healthchecks pass without restarts, and the gateway smoke suite covers every public API plus the internal gRPC-backed GraphQL path. Production Compose supports configurable registry/tag values, bounded Docker logs, restart policies, and non-root application images for deployment readiness.
-- Step 12 home-server definition is ready for native Ubuntu 24.04: application images build locally, production Compose remains loopback-bound, and systemd reconciles the stack after every boot. Native reboot verification and Cloudflare Tunnel setup remain pending on the target machine.
+- Step 11 pre-infrastructure verification is complete: tests, builds, runtime checks, production configuration validation, and repository security scans passed; GitHub CI remains `N/A` until step 13.
+- Step 12 home-server runtime is active on native Ubuntu 24.04: application images build locally, production Compose remains loopback-bound, and systemd reconciles the stack after every boot. Native reboot recovery is verified.
+- Step 13 is the next implementation task: create the required GitHub CI workflow. The final step 9 camera/microphone media check remains a manual acceptance item in two browser tabs.
+- Step 15 was completed ahead of steps 13-14: Cloudflare Tunnel publishes `https://api.jcb-services.me`, public HTTPS health and the 9/9 cross-protocol smoke suite passed, and Cloudflare Access now redirects unauthenticated requests before they reach the application.
 - The AWS Terraform configuration remains validated as an optional infrastructure exercise and reference target; the active home-server runtime has no AWS dependency.

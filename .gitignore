@@ -14,8 +14,15 @@ Thumbs.db
 .codex-tmp/
 
 # Local agent orchestration and private verification evidence.
+/AGENTS.md
+/Internship_DevOps_7_API_Blueprint.md
+/SECURITY.md
+/UBUNTU_HANDOFF.md
 AgentsRules.md
+platform/docs/OPERATIONS.md
 platform/docs/POST_UPDATE_CHECKLIST.md
+platform/docs/VERIFICATION.md
+UX/UI.md
 .codex/
 .agents/
 

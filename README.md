@@ -1,117 +1,125 @@
-# API Project - Ubuntu 24.04 Handoff
+# Internship API Platform
 
-Repository nay duoc tach thanh hai huong lam viec de khong lam mat checkpoint hien tai:
+## Mục tiêu
 
-- `main`: giu nguyen checkpoint tren Windows tai commit `428a1a7`.
-- `linux-os`: nhanh tiep tuc phat trien va van hanh tren native Ubuntu 24.04 LTS.
+Internship API Platform là một hệ thống microservice minh họa nhiều kiểu giao tiếp API trong cùng một nền tảng. Dự án tập trung vào ba mục tiêu chính:
 
-Trang thai hien tai: native Ubuntu bootstrap, production home-server deployment va systemd recovery sau reboot da duoc xac minh tren nhanh `linux-os`. Public HTTPS tam hoan cho den khi chon hostname thuoc quyen so huu hoac mot phuong an tunnel thay the. Home-server runtime khong can AWS. Ma Terraform EC2 van duoc giu de hoc va tham khao, nhung khong `apply` trong luong self-host.
+- Minh họa cách REST, GraphQL, gRPC, WebSocket, Webhook, SOAP và WebRTC cùng hoạt động trong một kiến trúc thống nhất.
+- Tách mỗi trách nhiệm thành một service và container độc lập, có healthcheck và giới hạn giao tiếp rõ ràng.
+- Xây dựng một môi trường thực hành DevOps có thể kiểm thử, triển khai và vận hành trên Ubuntu home server bằng Docker.
 
-Codex hoac nguoi tiep tuc du an tren Ubuntu phai doc `AGENTS.md` va `UBUNTU_HANDOFF.md` truoc khi thay doi repository.
+Hệ thống được thiết kế cho mục đích học tập, trình diễn kiến trúc và làm nền tảng cho các bài thực hành CI/CD, bảo mật, quan sát hệ thống và tự động hóa triển khai.
 
-## Chuyen sang Ubuntu 24.04
+## Kiến trúc xây dựng
 
-Tren Ubuntu moi, chi can cai Git truoc khi clone:
+### Kiến trúc tổng thể
 
-```bash
-sudo apt-get update
-sudo apt-get install -y git
-cd "$HOME"
-git clone --branch linux-os --single-branch https://github.com/thaikhangvip123/API-Project.git
-cd API-Project
-bash scripts/bootstrap-ubuntu-24.04.sh
+```text
+Người dùng / API client
+          |
+          v
+Cloudflare Access
+          |
+          v
+Cloudflare Tunnel + HTTPS
+          |
+          v
+Nginx API Gateway (127.0.0.1:8080)
+          |
+          v
+Docker network: platform-net
+          |
+          |-- auth-service
+          |-- user-service ---------> PostgreSQL
+          |-- graphql-service ------> user-service (REST)
+          |          `--------------> grpc-service (gRPC)
+          |                                `-------> user-service (REST)
+          |-- websocket-service
+          |-- webhook-service
+          |-- soap-service
+          `-- webrtc-signaling
 ```
 
-Bootstrap se cau hinh repository chinh thuc cua Docker, HashiCorp va NodeSource, sau do cai Docker Engine/Compose v2, Terraform 1.x, Node.js 22 (toi thieu 22.11.0) va cac cong cu kiem tra can thiet. Nen doc script truoc khi chay vi script su dung `sudo` de thay doi package repository cua may.
+Mọi lưu lượng từ bên ngoài đi qua Cloudflare và Nginx gateway. Các application service không publish port trực tiếp ra host; chúng giao tiếp qua Docker network riêng `platform-net`.
 
-Dang xuat va dang nhap lai neu bootstrap vua them user vao group `docker`, sau do:
+Gateway chỉ bind vào loopback `127.0.0.1:8080`. Cloudflare Tunnel tạo kênh kết nối outbound từ home server tới Cloudflare, nhờ đó không cần publish cổng HTTP của máy chủ trực tiếp ra Internet. Cloudflare Access đóng vai trò lớp kiểm soát truy cập phía trước gateway.
 
-```bash
-cd "$HOME/API-Project"
-bash scripts/verify-ubuntu-24.04.sh
-```
+### Nguyên tắc thiết kế
 
-Neu muon kiem tra development stack truoc khi cai home server production, chay tuy chon:
+- Mỗi container đảm nhiệm một trách nhiệm API chính.
+- Nginx là entry point HTTP duy nhất của nền tảng.
+- PostgreSQL và gRPC chỉ khả dụng trong mạng Docker nội bộ.
+- Service discovery sử dụng tên service của Docker Compose.
+- Healthcheck được khai báo cho gateway, database và các application service phù hợp.
+- Dữ liệu User được lưu trong PostgreSQL volume; các thành phần demo in-memory được tách biệt khỏi dữ liệu persistent.
+- Secret và production environment được nạp từ host, không đóng gói trong image hoặc source code.
+- WebSocket và WebRTC signaling dùng HTTP Upgrade qua cùng gateway.
+- WebRTC media truyền peer-to-peer; signaling server chỉ trao đổi room state, offer, answer và ICE candidate.
 
-```bash
-cd platform
-bash start.sh
-bash start.sh --stop
-```
+### Công nghệ chính
 
-Lan chay `start.sh` dau tien se tao `platform/.env` moi bang secret ngau nhien va tao PostgreSQL volume moi. Khong sao chep `.env`, Docker volume, `node_modules`, `.terraform`, file `*.tfplan` hoac credential tu Windows sang Ubuntu.
+| Lớp | Công nghệ |
+|---|---|
+| Host | Ubuntu Desktop 24.04 LTS, systemd |
+| Container | Docker Engine, Docker Compose |
+| Gateway | Nginx |
+| Node.js services | Node.js, Express, Apollo Server, Socket.IO, `ws`, gRPC |
+| SOAP service | Python, Spyne, Gunicorn |
+| Database | PostgreSQL, Prisma |
+| Public connectivity | Cloudflare Tunnel, Cloudflare Access, HTTPS |
+| Infrastructure reference | Terraform AWS |
 
-## Tuy chon: tao SSH key cho bai thuc hanh AWS
+## Các service
 
-Tao key rieng tren Ubuntu va dat passphrase khi `ssh-keygen` yeu cau:
+| Service | Loại giao tiếp | Public route | Trách nhiệm |
+|---|---|---|---|
+| `gateway` | HTTP reverse proxy | `/health` và toàn bộ proxied public route | Entry point, routing và WebSocket upgrade |
+| `auth-service` | REST + JWT | `/api/auth/*` | Đăng ký, đăng nhập, phát hành và xác minh JWT |
+| `user-service` | REST CRUD | `/api/users`, `/api/users/:id` | Quản lý user và truy cập PostgreSQL qua Prisma |
+| `graphql-service` | GraphQL | `/graphql` | Cung cấp query hợp nhất trên REST và gRPC |
+| `grpc-service` | gRPC | Internal only | Tra cứu user nội bộ cho GraphQL service |
+| `websocket-service` | Socket.IO/WebSocket | `/ws/*` | Chat realtime, presence và lịch sử tin nhắn giới hạn |
+| `webhook-service` | Signed webhook | `/webhook` | Xác minh HMAC-SHA256, idempotency và xử lý retry |
+| `soap-service` | SOAP/WSDL | `/soap`, `/soap?wsdl` | Chuyển số nguyên thành chữ tiếng Anh |
+| `webrtc-signaling` | WebSocket signaling | `/webrtc/*` | Room hai peer và trao đổi offer/answer/ICE |
+| `postgres` | PostgreSQL | Internal only | Lưu trữ dữ liệu user persistent |
 
-```bash
-install -d -m 0700 "$HOME/.ssh"
-ssh-keygen -t ed25519 -a 100 \
-  -f "$HOME/.ssh/internship-ec2-ubuntu24" \
-  -C "internship-api-ubuntu24"
-chmod 0600 "$HOME/.ssh/internship-ec2-ubuntu24"
-chmod 0644 "$HOME/.ssh/internship-ec2-ubuntu24.pub"
-```
+### Auth REST
 
-Private key chi nam trong `~/.ssh`; khong copy vao repository va khong commit vao Git.
+`auth-service` minh họa quy trình authentication bằng JWT:
 
-## Tuy chon: kiem tra Terraform AWS
+- `POST /api/auth/register`: tạo tài khoản demo và phát hành token.
+- `POST /api/auth/login`: xác minh thông tin đăng nhập và phát hành token.
+- `GET /api/auth/verify`: xác minh Bearer token.
 
-Phan nay khong can cho home server. Chi thuc hien khi chu dong hoc AWS va da cai AWS CLI, cau hinh credential ngan han hoac AWS profile:
+Tài khoản của auth-service được lưu trong memory cho phạm vi demo và tách biệt với dữ liệu User persistent.
 
-```bash
-cd "$(git rev-parse --show-toplevel)/infrastructure/terraform"
-terraform init
-terraform fmt -check
-terraform validate
-terraform test
+### User REST và PostgreSQL
 
-export TF_VAR_ssh_public_key="$(cat "$HOME/.ssh/internship-ec2-ubuntu24.pub")"
-export TF_VAR_ssh_ingress_cidr="$(curl --fail --silent --show-error https://checkip.amazonaws.com)/32"
-terraform plan -input=false -out=step12-ubuntu24.tfplan
-```
+`user-service` cung cấp các thao tác tạo, liệt kê, truy vấn, cập nhật và xóa user. Service sử dụng Prisma để giao tiếp với PostgreSQL và lưu dữ liệu trong Docker volume.
 
-Dung lai de review plan. Ky vong cua checkpoint hien tai la `5 add, 0 change, 0 destroy`. Chi chay `terraform apply step12-ubuntu24.tfplan` sau khi da xac nhan AWS account, region, chi phi va dia chi IP `/32`.
+### GraphQL và gRPC
 
-Chi tiet van hanh nam trong `platform/docs/OPERATIONS.md`; chi tiet ha tang nam trong `infrastructure/README.md`.
+`graphql-service` cung cấp một schema truy vấn thống nhất:
 
-## Home server tu khoi dong sau reboot
+- Query danh sách user gọi `user-service` qua REST.
+- Query một user theo ID gọi `grpc-service` qua gRPC.
+- `grpc-service` tiếp tục truy vấn dữ liệu từ `user-service` trong mạng nội bộ.
 
-Sau khi da clone tren Ubuntu 24.04, chay bootstrap va co domain du kien cho Cloudflare Tunnel, cai production stack cung systemd unit. Neu da chay development stack tuy chon o tren, dung no truoc:
+Cổng gRPC không được expose qua gateway hay ra Internet.
 
-```bash
-cd "$(git rev-parse --show-toplevel)/platform"
-bash start.sh --stop
-```
+### WebSocket Chat
 
-Sau do cai production stack:
+`websocket-service` cung cấp chat realtime bằng Socket.IO, bao gồm broadcast giữa các client, presence, reconnect và giới hạn lịch sử tin nhắn trong memory. Browser client được phục vụ qua `/ws/`.
 
-```bash
-cd "$(git rev-parse --show-toplevel)"
-bash scripts/install-home-server-autostart.sh demo.example.com
-```
+### Webhook
 
-Installer se tao `platform/.env.production` mode `0600`, build cac application image tai may nha, khoi dong production Compose va enable `internship-api-platform.service`. Sau cac lan reboot tiep theo, Docker va toan bo container se tu khoi dong ma khong can mo terminal hay VS Code.
+`webhook-service` tiếp nhận JSON webhook và xác minh chữ ký HMAC-SHA256 trên raw request body trước khi parse dữ liệu. Service có kiểm soát payload size, event ID và idempotency giới hạn trong memory.
 
-Kiem tra:
+### SOAP
 
-```bash
-systemctl status internship-api-platform.service
-bash scripts/home-server-compose.sh status
-curl --fail http://127.0.0.1:8080/health
-```
+`soap-service` cung cấp WSDL và operation `NumberToWords`, chuyển số nguyên trong phạm vi hỗ trợ thành chữ tiếng Anh. SOAP request và WSDL được truy cập qua cùng Nginx gateway.
 
-Sau lan reboot thu dau tien, xac minh application autostart:
+### WebRTC Signaling
 
-```bash
-bash scripts/verify-home-server-autostart.sh
-```
-
-Sau khi da cai Cloudflare Tunnel, xac minh ca domain public:
-
-```bash
-bash scripts/verify-home-server-autostart.sh https://demo.example.com
-```
-
-Production gateway van chi bind `127.0.0.1:8080`. Thiet bi ngoai chi truy cap duoc sau khi Cloudflare Tunnel da duoc cau hinh va `cloudflared.service` duoc enable. Home-server runtime khong su dung EC2, Elastic IP hay bat ky tai nguyen AWS nao; ma Terraform AWS duoc giu lai chi de hoc va lam deployment target tham khao.
+`webrtc-signaling` quản lý room hai người và chuyển tiếp offer, answer, ICE candidate giữa hai browser. Video/audio media được truyền trực tiếp giữa các peer, không đi qua signaling server.
